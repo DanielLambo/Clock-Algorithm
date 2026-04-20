@@ -1,42 +1,34 @@
 # MCRC — Mirror Clock Reverse Cipher
 
-A C++20 implementation of the Mirror Clock Reverse Cipher (MCRC), a
-four-stage hybrid cipher designed for a cryptography class assignment.
-Given a plaintext and a time key such as `3:20`, MCRC produces a
-dash-separated sequence of two-digit numeric codes. Each stage is an
-involution, so decryption is just the pipeline run backward.
+A custom encryption algorithm that turns plain text into a sequence of numbers — and back again. Created as a cryptography class project, MCRC combines four transformation steps inspired by an analog clock face.
 
-## Pipeline
+> **Not for real security.** MCRC is a learning cipher designed to be understood and explained. Do not use it to protect sensitive information.
+
+---
+
+## What does it do?
+
+You give MCRC a word (or any text) and a "time key" — a time like `3:20` — and it produces a coded sequence of numbers:
 
 ```
-plaintext -> [clockface] -> [mirror] -> [reverse cipher] -> [mirror] -> ciphertext
+QUEEN  →  22-18-08-08-25
 ```
 
-1. **Clockface substitution** — a letter-for-letter substitution keyed
-   by a clock-face layout (see below).
-2. **Mirror permutation** — reverse the character order of the string.
-3. **Reverse cipher substitution** — replace each letter with a
-   two-digit number using the fixed table `A=25, B=24, …, Z=00`.
-4. **Mirror permutation** — reverse the resulting sequence of numeric
-   pairs. Joining those pairs with `-` produces the final ciphertext.
+Give it the same time key and the coded numbers, and it gives you back the original word:
 
-### Worked example — `QUEEN` with key `3:20`
+```
+22-18-08-08-25  →  QUEEN
+```
 
-| Stage                 | Output              |
-| --------------------- | ------------------- |
-| Plaintext             | `QUEEN`             |
-| 1. Clockface          | `DHRRA`             |
-| 2. Mirror             | `ARRHD`             |
-| 3. Reverse cipher     | `25-08-08-18-22`    |
-| 4. Mirror (final)     | `22-18-08-08-25`    |
+---
 
-Hand-decrypting is the same sequence in reverse.
+## How the cipher works (plain English)
 
-## Clockface substitution
+MCRC applies four steps in order. Each step is reversible, so decryption just runs the steps backwards.
 
-Picture an analog clock with two concentric rings of letters. The 24
-positions (12 on each ring) hold the 24 letters that are not `M` or
-`Z`. `M` and `Z` sit at the centre and are never moved.
+### Step 1 — Clockface substitution
+
+Imagine an analog clock with two rings of letters around the face:
 
 ```
                     12
@@ -56,159 +48,325 @@ positions (12 on each ring) hold the 24 letters that are not `M` or
                      6
 ```
 
-- **Inner ring (clock 1..12):** `A B C D E F G H I J K L`
-- **Outer ring (clock 1..12):** `N O P Q R S T U V W X Y`
-- **Centre (fixed):** `M`, `Z`
+- The **inner ring** (positions 1–12) holds the letters: `A B C D E F G H I J K L`
+- The **outer ring** (positions 1–12) holds the letters: `N O P Q R S T U V W X Y`
+- `M` and `Z` sit at the centre and never change
 
-Encryption swaps the letter at each clock position with its partner on
-the opposite ring, i.e. a plain ROT13 across the 24 non-centre letters:
-
-```
-A<->N  B<->O  C<->P  D<->Q  E<->R  F<->S
-G<->T  H<->U  I<->V  J<->W  K<->X  L<->Y
-M, Z  -> themselves
-```
-
-Because the mapping is an involution, a single swap table handles both
-directions. The mapping is verified by `QUEEN` → `DHRRA`:
+Each letter swaps with the letter at the same clock position on the other ring:
 
 ```
-Q -> D   U -> H   E -> R   E -> R   N -> A
+A ↔ N    B ↔ O    C ↔ P    D ↔ Q    E ↔ R    F ↔ S
+G ↔ T    H ↔ U    I ↔ V    J ↔ W    K ↔ X    L ↔ Y
+M stays M,  Z stays Z
 ```
 
-### Time key
+So `Q` becomes `D`, `U` becomes `H`, `E` becomes `R`, and so on.
 
-A time key in the form `H:MM` or `HH:MM` (hour `1..12`, minute
-`0..59`) is a required, validated input to the pipeline, but **v1
-does not mix the time into the substitution**. The key is reserved
-for future variants of the cipher where the hour and minute hands
-will drive ring rotations; see the writeup for the class assignment
-for details. The CLI and library still reject invalid keys so the
-interface is stable across future variants.
+`QUEEN` → `DHRRA`
 
-## Reverse cipher table
+### Step 2 — Mirror (reverse the letters)
 
+Simply reverse the order of the letters from Step 1.
+
+`DHRRA` → `ARRHD`
+
+### Step 3 — Reverse cipher (letters become numbers)
+
+Replace each letter with a number using this table — the alphabet backwards:
+
+| A  | B  | C  | D  | E  | F  | G  | H  | I  | J  | K  | L  | M  |
+|----|----|----|----|----|----|----|----|----|----|----|----|----|
+| 25 | 24 | 23 | 22 | 21 | 20 | 19 | 18 | 17 | 16 | 15 | 14 | 13 |
+
+| N  | O  | P  | Q  | R  | S  | T  | U  | V  | W  | X  | Y  | Z  |
+|----|----|----|----|----|----|----|----|----|----|----|----|----|
+| 12 | 11 | 10 | 09 | 08 | 07 | 06 | 05 | 04 | 03 | 02 | 01 | 00 |
+
+`ARRHD` → `25-08-08-18-22`
+
+### Step 4 — Mirror again (reverse the numbers)
+
+Reverse the order of the number groups.
+
+`25-08-08-18-22` → `22-18-08-08-25`
+
+That's the final ciphertext.
+
+---
+
+### Full worked example
+
+| Step | What happens | Result |
+|------|-------------|--------|
+| Start | Original text | `QUEEN` |
+| Step 1 | Clockface swap | `DHRRA` |
+| Step 2 | Reverse letters | `ARRHD` |
+| Step 3 | Letters → numbers | `25-08-08-18-22` |
+| Step 4 | Reverse numbers | `22-18-08-08-25` |
+
+### Decryption (going backwards)
+
+| Step | What happens | Result |
+|------|-------------|--------|
+| Start | Ciphertext | `22-18-08-08-25` |
+| Undo Step 4 | Reverse numbers | `25-08-08-18-22` |
+| Undo Step 3 | Numbers → letters | `ARRHD` |
+| Undo Step 2 | Reverse letters | `DHRRA` |
+| Undo Step 1 | Clockface swap | `QUEEN` |
+
+---
+
+## The time key
+
+Every encryption and decryption requires a **time key** — a time written as `H:MM` or `HH:MM`, for example `3:20` or `11:45`.
+
+- The hour must be between **1 and 12**
+- The minute must be written with **two digits** (e.g. `05`, not `5`)
+
+Valid examples: `1:00`, `3:20`, `12:59`  
+Invalid examples: `0:30` (hour 0 not allowed), `3:5` (minute needs two digits), `13:00` (hour too large)
+
+> In this version of MCRC, the time key is checked for correctness but does not change the output. It is reserved for a future version where the clock hands will rotate the letter rings.
+
+---
+
+## Doing it by hand
+
+You don't need a computer. Here's how to encrypt with pen and paper:
+
+1. Write your message in **capital letters only**. Remove spaces, numbers, and punctuation.
+2. For each letter, find its swap partner using the clockface table above. (`M` and `Z` stay the same.)
+3. **Reverse** the resulting letters.
+4. Look up each letter in the number table above and write down the two-digit number.
+5. **Reverse** the list of numbers and join them with dashes.
+
+To decrypt, do the same steps in reverse order.
+
+---
+
+## Installing and building
+
+You need two things installed on your computer:
+
+- **CMake** (version 3.20 or newer) — a build tool
+- A **C++ compiler** that supports C++20 — such as GCC 13 or Clang 18
+
+If you're on macOS, both can be installed via [Homebrew](https://brew.sh):
+```bash
+brew install cmake gcc
 ```
-A=25  B=24  C=23  D=22  E=21  F=20  G=19  H=18  I=17
-J=16  K=15  L=14  M=13  N=12  O=11  P=10  Q=09  R=08
-S=07  T=06  U=05  V=04  W=03  X=02  Y=01  Z=00
+
+On Ubuntu/Debian Linux:
+```bash
+sudo apt install cmake g++
 ```
 
-Defined as a `constexpr` table in
-[`include/mcrc/reverse_cipher.hpp`](include/mcrc/reverse_cipher.hpp).
+### Build steps
 
-## Build
-
-Requires CMake ≥ 3.20 and a C++20-capable compiler. Tested clean on
-`g++` 13 and `clang++` 18 with `-Wall -Wextra -Wpedantic -Werror`. The
-code uses only the standard library.
+Open a terminal, navigate to this folder, and run:
 
 ```bash
 cmake -S . -B build
 cmake --build build
-./build/mcrc_verify      # run the assertion-based test suite
 ```
 
-The `verify` custom target builds and runs the verifier in one go:
+This creates three programs inside the `build/` folder:
+- `mcrc` — the main encryption/decryption tool
+- `mcrc_demo` — a step-by-step demonstration with a visual clock
+- `mcrc_verify` — a self-test that checks everything is working
 
+To confirm everything works:
 ```bash
-cmake --build build --target verify
+./build/mcrc_verify
 ```
 
-### C++17 fallback
+You should see:
+```
+mcrc_verify: all checks passed
+```
 
-The code targets C++20 for `constexpr` lambdas, `std::string_view`
-conveniences, and `constexpr std::array` initialisation. If your
-compiler lacks C++20 support, lowering the standard to C++17 works
-after one small change: replace the immediately-invoked `constexpr`
-lambda in `include/mcrc/reverse_cipher.hpp` with a named
-`constexpr` function (the lambda form requires C++20). No other
-source changes are required.
+---
 
-## CLI
+## Using the `mcrc` tool
+
+### Encrypt a message
 
 ```bash
 ./build/mcrc encrypt --key 3:20 --text QUEEN
-# 22-18-08-08-25
-
-./build/mcrc decrypt --key 3:20 --cipher 22-18-08-08-25
-# QUEEN
-
-./build/mcrc encrypt --key 3:20 --text "Queen of hearts" --reject
-# InvalidPlaintext: non-letter character in plaintext under Reject policy
-
-./build/mcrc encrypt --key 3:20 --text "Queen of hearts"
-# default is Strip; non-letters are silently dropped
+```
+Output:
+```
+22-18-08-08-25
 ```
 
-### Demo walkthrough
+### Decrypt a message
+
+```bash
+./build/mcrc decrypt --key 3:20 --cipher 22-18-08-08-25
+```
+Output:
+```
+QUEEN
+```
+
+### Spaces and punctuation
+
+By default, spaces, numbers, and punctuation are **silently removed** before encryption:
+
+```bash
+./build/mcrc encrypt --key 3:20 --text "Queen of Hearts"
+# Encrypts QUEENOFHEARTS (spaces and case ignored)
+```
+
+If you want the tool to **refuse** input that contains non-letters, add `--reject`:
+
+```bash
+./build/mcrc encrypt --key 3:20 --text "Queen of Hearts" --reject
+# Error: InvalidPlaintext: non-letter character in plaintext under Reject policy
+```
+
+### What the exit codes mean
+
+If something goes wrong, the tool exits with a number that tells you what happened:
+
+| Exit code | Meaning |
+|-----------|---------|
+| `0` | Success (also returned by `--help` / `-h`) |
+| `1` | Wrong usage (missing flags, unknown command) |
+| `2` | Invalid time key |
+| `3` | Invalid ciphertext |
+| `4` | Invalid plaintext (only with `--reject`) |
+
+To see usage at any time:
+
+```bash
+./build/mcrc --help
+./build/mcrc -h
+```
+
+---
+
+## Using the `mcrc_demo` tool
+
+The demo tool shows you every step of the encryption process, including a visual clock face:
 
 ```bash
 ./build/mcrc_demo --key 3:20 --text QUEEN
 ```
 
-Shows an ASCII clock face with the hour hand (`H`) and minute hand
-(`M`), followed by the output of each pipeline stage. Use
-`--no-clock` to suppress the clock rendering.
-
-## Library layout
-
+Example output:
 ```
-include/mcrc/
-├── clockface.hpp        stage 1 + TimeKey parser
-├── mirror.hpp           stage 2 / 4
-├── reverse_cipher.hpp   stage 3 + code formatting/parsing
-├── pipeline.hpp         encrypt / decrypt / encrypt_trace
-└── exceptions.hpp       InvalidTimeKey / InvalidCiphertext / InvalidPlaintext
+Clock face for 3:20 (H = hour hand, M = minute hand):
+           12
+       11      1
+     L            O
+  10                 2
+  K                    P
 
-src/
-├── clockface.cpp
-├── mirror.cpp
-├── pipeline.cpp
-└── reverse_cipher.cpp
+9   J        +       Q   3
+            M Z
+   I                    R
+    8                  4
+       H            S
+         7        5
+              G T
+                6
 
-apps/
-├── cli.cpp       -> mcrc
-└── demo.cpp      -> mcrc_demo
-
-tests/
-└── verify.cpp    -> mcrc_verify
+Input (normalised):       QUEEN
+Stage 1 (clockface):      DHRRA
+Stage 2 (mirror):         ARRHD
+Stage 3 (reverse num):    25-08-08-18-22
+Stage 4 (mirror):         22-18-08-08-25
 ```
 
-All public declarations carry Doxygen-style comments.
+To hide the clock and show only the pipeline steps:
 
-## Error handling
+```bash
+./build/mcrc_demo --key 3:20 --text QUEEN --no-clock
+```
 
-Three custom exception types, all deriving from `std::runtime_error`:
+---
 
-| Type                  | Raised by                                                         |
-| --------------------- | ----------------------------------------------------------------- |
-| `InvalidTimeKey`      | `parse_time_key` on malformed or out-of-range keys                |
-| `InvalidCiphertext`   | `parse_codes` / `reverse_cipher_decode` on malformed cipher input |
-| `InvalidPlaintext`    | pipeline under `Reject` policy when plaintext has non-letters     |
+## Error messages explained
 
-## Verification
+| Message | What it means | How to fix it |
+|---------|--------------|---------------|
+| `InvalidTimeKey: hour out of range [1, 12]` | The hour in your key is 0 or greater than 12 | Use a value between 1 and 12 |
+| `InvalidTimeKey: minute must be exactly 2 digits` | You wrote `3:5` instead of `3:05` | Always use two digits for minutes |
+| `InvalidTimeKey: missing ':' separator` | Your key doesn't have a colon | Write it as `3:20`, not `320` |
+| `InvalidCiphertext: code group exceeds 25` | The ciphertext contains a number above 25 | Check you copied the ciphertext correctly |
+| `InvalidCiphertext: truncated two-digit group` | The ciphertext is cut off | Make sure the full ciphertext is present |
+| `InvalidPlaintext: non-letter character...` | Your text has spaces or punctuation and you used `--reject` | Remove non-letters, or drop `--reject` |
 
-`mcrc_verify` is a single executable packed with `assert()` calls:
+---
 
-- Individual layer round-trips (clockface, mirror, reverse cipher).
-- The integration assertion `encrypt("QUEEN", "3:20") == "22-18-08-08-25"`.
-- 100 pseudo-random A–Z plaintexts × random valid time keys, each
-  asserting `decrypt(encrypt(p, k), k) == p`.
-- Error-path assertions for each custom exception type.
+## Project layout
 
-The verifier unconditionally undefines `NDEBUG` at the top of its
-translation unit so assertions fire regardless of build type.
+```
+mcrc/
+├── include/mcrc/
+│   ├── clockface.hpp        Step 1 — clockface substitution
+│   ├── mirror.hpp           Steps 2 & 4 — reversal
+│   ├── reverse_cipher.hpp   Step 3 — letter-to-number encoding
+│   ├── pipeline.hpp         Full encrypt / decrypt functions
+│   └── exceptions.hpp       Error types
+│
+├── src/
+│   ├── clockface.cpp
+│   ├── mirror.cpp
+│   ├── pipeline.cpp
+│   └── reverse_cipher.cpp
+│
+├── apps/
+│   ├── cli.cpp       →  mcrc (the main tool)
+│   └── demo.cpp      →  mcrc_demo (the visual demo)
+│
+├── tests/
+│   └── verify.cpp    →  mcrc_verify (self-test suite)
+│
+└── CMakeLists.txt    Build configuration
+```
 
-## Hand-encrypting
+---
 
-A classmate can reproduce the cipher with pen and paper:
+## Running the self-tests
 
-1. Strip non-letters and upper-case the plaintext.
-2. For each letter, apply the ROT13 partner swap (leave `M`, `Z` alone).
-3. Reverse the string.
-4. Look up each letter in the reverse-cipher table above to get a
-   two-digit number; join the numbers with `-`.
-5. Reverse the list of numbers. That is the ciphertext.
+The verification suite checks every part of the cipher automatically:
 
-Decryption is the same steps in reverse.
+```bash
+cmake --build build --target verify
+```
+
+It tests:
+- Every letter in the clockface swap table
+- The mirror reversal (both letters and numbers)
+- The reverse cipher encoding and decoding
+- Time key validation (valid and invalid formats)
+- Ciphertext parsing (valid and malformed inputs)
+- The known-answer test: `QUEEN` with key `3:20` → `22-18-08-08-25`
+- 100 randomly generated messages, each encrypted and then decrypted to confirm the original is recovered
+
+---
+
+## Frequently asked questions
+
+**Can I use any word?**  
+Yes. Letters only — spaces and punctuation are stripped automatically (or rejected if you use `--reject`). The output is always uppercase.
+
+**Does the time key change the result?**  
+In this version (v1), no. The time key is validated but does not affect the output. This is intentional — a future version will use the clock hands to rotate the letter rings.
+
+**Can I encrypt numbers or emoji?**  
+No. MCRC only works with the 26 letters of the English alphabet. Everything else is either removed or causes an error.
+
+**Is this secure?**  
+No. MCRC is a teaching cipher. It uses fixed, publicly known substitution tables and is vulnerable to simple analysis. Never use it to protect real secrets.
+
+**What if I lose the time key?**  
+In v1, any valid time key produces the same result, so the key doesn't matter for decryption yet. In a future version, you will need the exact key.
+
+---
+
+## Note on the original specification document
+
+The original class assignment document shows `QUEEN → EHRRA` at the clockface step. The correct output is `QUEEN → DHRRA`. The letter `Q` is on the outer ring at clock position 4 and swaps with `D` on the inner ring — not `E` (which is at position 5). The code, the verify suite, and this README all use the correct mapping.

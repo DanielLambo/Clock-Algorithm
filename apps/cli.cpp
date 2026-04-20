@@ -30,6 +30,10 @@ std::optional<Args> parse_args(int argc, char** argv) {
     if (argc < 2) {
         return std::nullopt;
     }
+    // Handle top-level -h / --help before treating argv[1] as a subcommand.
+    if (std::string_view(argv[1]) == "-h" || std::string_view(argv[1]) == "--help") {
+        return std::nullopt;
+    }
     Args a;
     a.command = argv[1];
     for (int i = 2; i < argc; ++i) {

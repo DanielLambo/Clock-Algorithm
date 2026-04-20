@@ -59,6 +59,18 @@ void verify_reverse_cipher_roundtrip() {
     assert(mcrc::format_codes(codes) == "09-05-21-21-12");
     assert(mcrc::parse_codes("09-05-21-21-12") == codes);
     assert(mcrc::parse_codes("") == std::vector<std::uint8_t>{});
+
+    // P7 — Reverse Cipher Code Range: every code must be in [0, 25].
+    const auto all_codes = mcrc::reverse_cipher_encode("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+    assert(all_codes.size() == 26);
+    for (std::uint8_t v : all_codes) {
+        assert(v <= 25);
+    }
+
+    // P9 — format_codes output length: non-empty → size() == n*3-1; empty → "".
+    assert(mcrc::format_codes({}).empty());
+    const std::string formatted = mcrc::format_codes(all_codes);
+    assert(formatted.size() == all_codes.size() * 3 - 1);
 }
 
 void verify_clockface_layer() {
@@ -149,6 +161,44 @@ void verify_integration() {
     // Empty plaintext is a valid edge case.
     assert(mcrc::encrypt("", "3:20") == "");
     assert(mcrc::decrypt("", "3:20") == "");
+
+    // P11 — Ciphertext group count equals plaintext length.
+    {
+        const std::string ct = mcrc::encrypt("QUEEN", "3:20");
+        auto count_groups = [](const std::string& s) -> std::size_t {
+            if (s.empty()) return 0;
+            std::size_t n = 1;
+            for (char c : s) { if (c == '-') ++n; }
+            return n;
+        };
+        assert(count_groups(ct) == 5); // length of "QUEEN"
+        assert(count_groups(mcrc::encrypt("", "3:20")) == 0);
+    }
+
+    // P12 — Strip policy idempotence: pre-normalised input == mixed input.
+    assert(mcrc::encrypt("Queen!", "3:20") == mcrc::encrypt("QUEEN", "3:20"));
+}
+
+void verify_pipeline_trace() {
+    // Req 8.1 — encrypt_trace captures all five intermediate stages.
+    const auto t = mcrc::encrypt_trace("QUEEN", "3:20");
+    assert(t.normalised           == "QUEEN");
+    assert(t.after_clockface      == "DHRRA");
+    assert(t.after_first_mirror   == "ARRHD");
+    assert(t.after_reverse_cipher == "25-08-08-18-22");
+    assert(t.after_second_mirror  == "22-18-08-08-25");
+
+    // Req 8.2 — after_second_mirror must equal encrypt() with the same args.
+    assert(t.after_second_mirror == mcrc::encrypt("QUEEN", "3:20"));
+
+    // Req 8.3 — malformed key throws InvalidTimeKey.
+    bool threw = false;
+    try {
+        mcrc::encrypt_trace("QUEEN", "0:00");
+    } catch (const mcrc::InvalidTimeKey&) {
+        threw = true;
+    }
+    assert(threw);
 }
 
 void verify_random_roundtrip() {
@@ -187,6 +237,7 @@ int main() {
     verify_time_key_parsing();
     verify_ciphertext_parsing_errors();
     verify_integration();
+    verify_pipeline_trace();
     verify_random_roundtrip();
 
     std::cout << "mcrc_verify: all checks passed\n";
