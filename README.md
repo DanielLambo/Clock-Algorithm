@@ -126,7 +126,7 @@ Every encryption and decryption requires a **time key** — a time written as `H
 Valid examples: `1:00`, `3:20`, `12:59`  
 Invalid examples: `0:30` (hour 0 not allowed), `3:5` (minute needs two digits), `13:00` (hour too large)
 
-> In this version of MCRC, the time key is checked for correctness but does not change the output. It is reserved for a future version where the clock hands will rotate the letter rings.
+> In v2 (default), the time key drives independent ring rotations that change the output. In v1, the key is validated but does not affect the substitution.
 
 ---
 
@@ -354,7 +354,7 @@ It tests:
 Yes. Letters only — spaces and punctuation are stripped automatically (or rejected if you use `--reject`). The output is always uppercase.
 
 **Does the time key change the result?**  
-In this version (v1), no. The time key is validated but does not affect the output. This is intentional — a future version will use the clock hands to rotate the letter rings.
+In v2 (default), yes — the hour and minute drive independent ring rotations, so different keys produce different ciphertext. In v1, the key is validated but does not affect output.
 
 **Can I encrypt numbers or emoji?**  
 No. MCRC only works with the 26 letters of the English alphabet. Everything else is either removed or causes an error.
@@ -363,10 +363,63 @@ No. MCRC only works with the 26 letters of the English alphabet. Everything else
 No. MCRC is a teaching cipher. It uses fixed, publicly known substitution tables and is vulnerable to simple analysis. Never use it to protect real secrets.
 
 **What if I lose the time key?**  
-In v1, any valid time key produces the same result, so the key doesn't matter for decryption yet. In a future version, you will need the exact key.
+In v2, you need the exact key to decrypt. In v1, any valid key works (the key doesn't affect output).
+
+---
+
+## Algorithm versions
+
+| Version | Clockface behaviour | Time key role |
+|---------|-------------------|---------------|
+| **v1** | Pure ROT13 — each letter swaps with the letter at the same clock position on the opposite ring. The substitution is identical for every time key. | Validated (`H:MM`, hour 1–12, minute 0–59) but **does not affect output**. |
+| **v2** (default) | Dual-rotation — inner letters shift forward, outer letters shift forward (see rules below). Different keys produce different ciphertext. Not an involution (encode ≠ decode). | `hour_offset = H mod 12`, `minute_offset = MM / 5`. Both actively mixed into the substitution. |
+
+Use `--version v1` or `--version v2` on the CLI to select. Default is v2.
+
+### Why A↔N, B↔O, … specifically?
+
+The inner ring (A–L) and outer ring (N–Y) are positioned so that each inner letter is exactly 13 apart from its outer partner — standard ROT13. This is the **design anchor**: at key `12:00` (both offsets zero), v2's shift-based rule collapses to v1's pure ROT13 swap. The ring layout guarantees backward compatibility by construction.
+
+### v2 hand-encoding rules
+
+Compute two offsets from the time key:
+- `hour_offset = H mod 12` (e.g. `3:20` → 3; `12:00` → 0)
+- `minute_offset = MM / 5` (integer division, e.g. `3:20` → 4; `12:00` → 0)
+
+Then for each letter:
+
+| Input letter's ring | Rule | Formula |
+|---|---|---|
+| **Inner** (A–L, position `p` = letter − 'A') | Shift forward by `hour_offset` onto the outer ring | output = outer letter at position `(p + hour_offset) mod 12`, i.e. `'N' + (p + hour_offset) % 12` |
+| **Outer** (N–Y, position `p` = letter − 'N') | Shift forward by `minute_offset` onto the inner ring | output = inner letter at position `(p + minute_offset) mod 12`, i.e. `'A' + (p + minute_offset) % 12` |
+| **Centre** (M or Z) | Fixed point | output = itself |
+
+To **decode**, reverse the shifts: inner letters shift back by `minute_offset` to recover the outer original, outer letters shift back by `hour_offset` to recover the inner original.
+
+### v2 worked example (`QUEEN`, key `3:20`)
+
+Offsets: `hour_offset = 3`, `minute_offset = 4`
+
+| Letter | Ring | Position | Shift | Output position | Output |
+|--------|------|----------|-------|-----------------|--------|
+| Q | outer | 3 | +4 (minute) | 7 | H |
+| U | outer | 7 | +4 (minute) | 11 | L |
+| E | inner | 4 | +3 (hour) | 7 | U |
+| E | inner | 4 | +3 (hour) | 7 | U |
+| N | outer | 0 | +4 (minute) | 4 | E |
+
+```
+QUEEN
+ → HLUUE              (clockface v2)
+ → EUULH              (first mirror)
+ → 21-05-05-14-18     (reverse cipher)
+ → 18-14-05-05-21     (second mirror — final ciphertext)
+```
+
+At key `12:00` (both offsets zero), every inner letter shifts by 0 onto the outer ring at the same position — which is exactly the v1 ROT13 swap.
 
 ---
 
 ## Note on the original specification document
 
-The original class assignment document shows `QUEEN → EHRRA` at the clockface step. The correct output is `QUEEN → DHRRA`. The letter `Q` is on the outer ring at clock position 4 and swaps with `D` on the inner ring — not `E` (which is at position 5). The code, the verify suite, and this README all use the correct mapping.
+The original class assignment document had `Q` incorrectly mapped to `E` (position 5) instead of `D` (position 4) in the clockface step, yielding a wrong intermediate. This has been corrected in the v1.0 implementation: `QUEEN → DHRRA`, final ciphertext `22-18-08-08-25`.

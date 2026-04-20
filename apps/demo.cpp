@@ -12,13 +12,14 @@
 namespace {
 
 void print_usage(std::ostream& os) {
-    os << "Usage: mcrc_demo --key <H:MM> --text <PLAINTEXT> [--no-clock]\n";
+    os << "Usage: mcrc_demo --key <H:MM> --text <PLAINTEXT> [--no-clock] [--version v1|v2]\n";
 }
 
 struct DemoArgs {
     std::optional<std::string_view> key;
     std::optional<std::string_view> text;
     bool clock = true;
+    mcrc::Version version = mcrc::Version::V2;
 };
 
 std::optional<DemoArgs> parse_args(int argc, char** argv) {
@@ -37,6 +38,15 @@ std::optional<DemoArgs> parse_args(int argc, char** argv) {
             a.text = need_value("--text");
         } else if (flag == "--no-clock") {
             a.clock = false;
+        } else if (flag == "--version") {
+            auto val = need_value("--version");
+            if (val == "v1") {
+                a.version = mcrc::Version::V1;
+            } else if (val == "v2") {
+                a.version = mcrc::Version::V2;
+            } else {
+                throw std::runtime_error("--version must be v1 or v2");
+            }
         } else if (flag == "-h" || flag == "--help") {
             return std::nullopt;
         } else {
@@ -120,7 +130,8 @@ int main(int argc, char** argv) {
         }
         const DemoArgs& a = *parsed;
 
-        const auto trace = mcrc::encrypt_trace(*a.text, *a.key);
+        const auto trace = mcrc::encrypt_trace(*a.text, *a.key,
+                                               mcrc::NonLetterPolicy::Strip, a.version);
 
         if (a.clock) {
             const auto key = mcrc::parse_time_key(*a.key);

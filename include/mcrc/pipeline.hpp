@@ -14,28 +14,15 @@ enum class NonLetterPolicy {
 };
 
 /// Runs the full 4-stage MCRC pipeline.
-///
-/// Pipeline: clockface \u2192 mirror \u2192 reverse-cipher \u2192 mirror.
-///
-/// @param plaintext Input to encrypt. Case is normalised to upper.
-/// @param time_key  Required validated key (`H:MM` / `HH:MM`).
-/// @param policy    What to do with non-letters before stage 1.
-/// @return MCRC ciphertext as `NN-NN-...-NN`.
-/// @throws InvalidTimeKey   on malformed key.
-/// @throws InvalidPlaintext under `Reject` on non-letter input.
 std::string encrypt(std::string_view plaintext,
                     std::string_view time_key,
-                    NonLetterPolicy policy = NonLetterPolicy::Strip);
+                    NonLetterPolicy policy = NonLetterPolicy::Strip,
+                    Version version = Version::V2);
 
-/// Inverts `encrypt`. Runs the pipeline in reverse so that
-/// `decrypt(encrypt(p, k), k) == normalised(p)`.
-///
-/// @param ciphertext MCRC ciphertext (`NN-NN-...-NN`).
-/// @param time_key   Same key used for encryption.
-/// @return Uppercase plaintext.
-/// @throws InvalidTimeKey    on malformed key.
-/// @throws InvalidCiphertext on malformed ciphertext.
-std::string decrypt(std::string_view ciphertext, std::string_view time_key);
+/// Inverts `encrypt`.
+std::string decrypt(std::string_view ciphertext,
+                    std::string_view time_key,
+                    Version version = Version::V2);
 
 /// Bundle of intermediate pipeline states, for the demo executable.
 struct PipelineTrace {
@@ -49,6 +36,7 @@ struct PipelineTrace {
 /// Runs `encrypt` while capturing every intermediate stage.
 PipelineTrace encrypt_trace(std::string_view plaintext,
                             std::string_view time_key,
-                            NonLetterPolicy policy = NonLetterPolicy::Strip);
+                            NonLetterPolicy policy = NonLetterPolicy::Strip,
+                            Version version = Version::V2);
 
 } // namespace mcrc

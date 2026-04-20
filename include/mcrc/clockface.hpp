@@ -6,6 +6,9 @@
 
 namespace mcrc {
 
+/// Algorithm version selector.
+enum class Version { V1, V2 };
+
 /// A validated MCRC time key in the form `H:MM` / `HH:MM`.
 ///
 /// Hours are in [1, 12] and minutes in [0, 59]. The time key is
@@ -24,23 +27,18 @@ struct TimeKey {
 /// @throws InvalidTimeKey on any format or range violation.
 TimeKey parse_time_key(std::string_view text);
 
-/// Applies the MCRC clockface substitution (stage 1 / forward).
-///
-/// The clockface is a dual 12-position ring:
-///   * Inner ring: A B C D E F G H I J K L
-///   * Outer ring: N O P Q R S T U V W X Y
-/// At each clock position the two letters are ROT13 partners and are
-/// swapped. `M` and `Z` sit at the centre and map to themselves.
-///
-/// @param letters Uppercase A\u2013Z input.
-/// @param key     Validated time key (unused in v1 but required).
-/// @return Substituted string of the same length.
-/// @throws InvalidPlaintext if any non-letter slips through.
+/// V1 clockface substitution (pure ROT13, time key ignored).
 std::string clockface_encode(std::string_view letters, const TimeKey& key);
-
-/// Inverse of `clockface_encode`. Because the substitution is a pure
-/// involution, `clockface_decode` is implemented by re-applying the
-/// same swap table, but is exposed separately for symmetry.
 std::string clockface_decode(std::string_view letters, const TimeKey& key);
+
+/// V2 clockface substitution (dual-rotation driven by time key).
+///
+/// Inner ring letters shift by (hour mod 12) positions onto the outer ring.
+/// Outer ring letters shift by (minute / 5) positions onto the inner ring.
+/// M and Z are centre specials (map to themselves).
+/// NOT an involution — encode and decode are distinct inverse operations.
+/// At key 12:00 (both offsets zero), v2 collapses to v1 ROT13.
+std::string clockface_v2_encode(std::string_view letters, const TimeKey& key);
+std::string clockface_v2_decode(std::string_view letters, const TimeKey& key);
 
 } // namespace mcrc

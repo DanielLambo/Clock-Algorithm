@@ -706,23 +706,27 @@ Key properties to cover (see Correctness Properties section):
 
 ---
 
-## Known Gap: Spec Document vs. Implementation
+## Resolved: Spec Document vs. Implementation (corrected in v1.0)
 
-The original MCRC specification document shows the worked example:
+The original MCRC specification document had an incorrect clockface result (Q mapped to E instead of D).
 
-```
-QUEEN → EHRRA  (clockface stage)
-```
-
-The implementation produces:
+The correct v1.0 pipeline (pure ROT13 clockface substitution):
 
 ```
-QUEEN → DHRRA  (clockface stage)
+QUEEN → DHRRA  (clockface stage)  ← CORRECT
 ```
 
-**Root cause**: The spec document's dual-ring layout describes a ROT13-over-24-letters substitution (A↔N, B↔O, …, L↔Y; M and Z fixed). The letter Q is at clock position 4 on the outer ring and maps to D (inner ring, position 4). The spec example showing Q→E is incorrect — E is at clock position 5, not position 4.
+**Root cause**: The spec document's dual-ring layout describes a ROT13-over-24-letters substitution (A↔N, B↔O, …, L↔Y; M and Z fixed). The letter Q is at clock position 4 on the outer ring and maps to D (inner ring, position 4). The spec example showing Q→E was incorrect — E is at clock position 5, not position 4.
 
-**Resolution**: The code's implementation is the authoritative definition. The `verify.cpp` suite is written to match the code's actual behavior (`QUEEN → DHRRA`, final ciphertext `22-18-08-08-25`). The spec document example should be treated as erroneous and corrected in any future revision.
+**Resolution**: Corrected in the v1.0 release. The README, code, and verify suite all use the correct mapping. Full pipeline trace:
+
+```
+QUEEN
+ → DHRRA              (clockface substitution, pure ROT13)
+ → ARRHD              (first mirror permutation)
+ → 25-08-08-18-22     (reverse cipher substitution)
+ → 22-18-08-08-25     (second mirror permutation — final ciphertext)
+```
 
 ---
 

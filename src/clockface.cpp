@@ -8,14 +8,10 @@
 namespace mcrc {
 namespace {
 
-/// Precomputed ROT13-over-24-letters swap table.
-///
-/// Layout:
-///   inner ring (clock 1..12): A B C D E F G H I J K L
-///   outer ring (clock 1..12): N O P Q R S T U V W X Y
-/// Letters at the same clock position swap with each other. `M` and
-/// `Z` sit at the centre and map to themselves. The resulting table
-/// is an involution, so encoding and decoding share it.
+// ---------------------------------------------------------------------------
+// V1: Pure ROT13 (compile-time table, key ignored)
+// ---------------------------------------------------------------------------
+
 constexpr std::array<char, 26> make_swap_table() {
     std::array<char, 26> t{};
     for (int i = 0; i < 26; ++i) {
@@ -25,7 +21,6 @@ constexpr std::array<char, 26> make_swap_table() {
         } else if (letter >= 'A' && letter <= 'L') {
             t[static_cast<std::size_t>(i)] = static_cast<char>(letter + 13);
         } else {
-            // N..Y map to A..L (letter - 13)
             t[static_cast<std::size_t>(i)] = static_cast<char>(letter - 13);
         }
     }
@@ -43,6 +38,69 @@ std::string apply_swap(std::string_view letters) {
                 "clockface layer received non-letter character");
         }
         out.push_back(kSwapTable[static_cast<std::size_t>(c - 'A')]);
+    }
+    return out;
+}
+
+// ---------------------------------------------------------------------------
+// V2: Dual-rotation clockface (key-dependent, non-involutory)
+//
+// Encode: inner letter at pos p → outer at pos (p + hour_offset) % 12
+//         outer letter at pos p → inner at pos (p + minute_offset) % 12
+// Decode: inner letter at pos q (came from outer) → outer at pos (q - minute_offset + 12) % 12
+//         outer letter at pos q (came from inner) → inner at pos (q - hour_offset + 12) % 12
+//
+// At key 12:00 (offsets both 0), this collapses to v1 ROT13.
+// ---------------------------------------------------------------------------
+
+std::string apply_v2_encode(std::string_view letters, const TimeKey& key) {
+    const int h = key.hour % 12;
+    const int m = key.minute / 5;
+
+    std::string out;
+    out.reserve(letters.size());
+
+    for (char c : letters) {
+        if (c < 'A' || c > 'Z') {
+            throw InvalidPlaintext(
+                "clockface layer received non-letter character");
+        }
+        if (c == 'M' || c == 'Z') { out.push_back(c); continue; }
+
+        if (c >= 'A' && c <= 'L') {
+            int p = c - 'A';
+            out.push_back(static_cast<char>('N' + (p + h) % 12));
+        } else {
+            int p = c - 'N';
+            out.push_back(static_cast<char>('A' + (p + m) % 12));
+        }
+    }
+    return out;
+}
+
+std::string apply_v2_decode(std::string_view letters, const TimeKey& key) {
+    const int h = key.hour % 12;
+    const int m = key.minute / 5;
+
+    std::string out;
+    out.reserve(letters.size());
+
+    for (char c : letters) {
+        if (c < 'A' || c > 'Z') {
+            throw InvalidPlaintext(
+                "clockface layer received non-letter character");
+        }
+        if (c == 'M' || c == 'Z') { out.push_back(c); continue; }
+
+        if (c >= 'A' && c <= 'L') {
+            // Inner letter in ciphertext came from outer letter during encode.
+            int q = c - 'A';
+            out.push_back(static_cast<char>('N' + (q - m + 12) % 12));
+        } else {
+            // Outer letter in ciphertext came from inner letter during encode.
+            int q = c - 'N';
+            out.push_back(static_cast<char>('A' + (q - h + 12) % 12));
+        }
     }
     return out;
 }
@@ -100,6 +158,14 @@ std::string clockface_encode(std::string_view letters, const TimeKey& /*key*/) {
 
 std::string clockface_decode(std::string_view letters, const TimeKey& /*key*/) {
     return apply_swap(letters);
+}
+
+std::string clockface_v2_encode(std::string_view letters, const TimeKey& key) {
+    return apply_v2_encode(letters, key);
+}
+
+std::string clockface_v2_decode(std::string_view letters, const TimeKey& key) {
+    return apply_v2_decode(letters, key);
 }
 
 } // namespace mcrc

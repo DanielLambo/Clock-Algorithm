@@ -27,15 +27,26 @@ std::string normalise(std::string_view plaintext, NonLetterPolicy policy) {
     return out;
 }
 
+std::string do_clockface_encode(std::string_view letters, const TimeKey& key, Version ver) {
+    return ver == Version::V2 ? clockface_v2_encode(letters, key)
+                              : clockface_encode(letters, key);
+}
+
+std::string do_clockface_decode(std::string_view letters, const TimeKey& key, Version ver) {
+    return ver == Version::V2 ? clockface_v2_decode(letters, key)
+                              : clockface_decode(letters, key);
+}
+
 } // namespace
 
 std::string encrypt(std::string_view plaintext,
                     std::string_view time_key,
-                    NonLetterPolicy policy) {
+                    NonLetterPolicy policy,
+                    Version version) {
     const TimeKey key = parse_time_key(time_key);
     const std::string normalised = normalise(plaintext, policy);
 
-    const std::string stage1 = clockface_encode(normalised, key);
+    const std::string stage1 = do_clockface_encode(normalised, key, version);
     const std::string stage2 = mirror(stage1);
     const std::vector<std::uint8_t> stage3 = reverse_cipher_encode(stage2);
     const std::vector<std::uint8_t> stage4 = mirror(stage3);
@@ -43,24 +54,27 @@ std::string encrypt(std::string_view plaintext,
     return format_codes(stage4);
 }
 
-std::string decrypt(std::string_view ciphertext, std::string_view time_key) {
+std::string decrypt(std::string_view ciphertext,
+                    std::string_view time_key,
+                    Version version) {
     const TimeKey key = parse_time_key(time_key);
 
     const std::vector<std::uint8_t> codes = parse_codes(ciphertext);
     const std::vector<std::uint8_t> un_stage4 = mirror(codes);
     const std::string un_stage3 = reverse_cipher_decode(un_stage4);
     const std::string un_stage2 = mirror(un_stage3);
-    return clockface_decode(un_stage2, key);
+    return do_clockface_decode(un_stage2, key, version);
 }
 
 PipelineTrace encrypt_trace(std::string_view plaintext,
                             std::string_view time_key,
-                            NonLetterPolicy policy) {
+                            NonLetterPolicy policy,
+                            Version version) {
     const TimeKey key = parse_time_key(time_key);
 
     PipelineTrace t;
     t.normalised = normalise(plaintext, policy);
-    t.after_clockface = clockface_encode(t.normalised, key);
+    t.after_clockface = do_clockface_encode(t.normalised, key, version);
     t.after_first_mirror = mirror(t.after_clockface);
     const auto codes = reverse_cipher_encode(t.after_first_mirror);
     t.after_reverse_cipher = format_codes(codes);

@@ -11,11 +11,11 @@ namespace {
 
 void print_usage(std::ostream& os) {
     os << "Usage:\n"
-       << "  mcrc encrypt --key <H:MM> --text <PLAINTEXT> [--reject]\n"
-       << "  mcrc decrypt --key <H:MM> --cipher <NN-NN-...>\n"
+       << "  mcrc encrypt --key <H:MM> --text <PLAINTEXT> [--reject] [--version v1|v2]\n"
+       << "  mcrc decrypt --key <H:MM> --cipher <NN-NN-...> [--version v1|v2]\n"
        << "\nExamples:\n"
        << "  mcrc encrypt --key 3:20 --text QUEEN\n"
-       << "  mcrc decrypt --key 3:20 --cipher 22-18-08-08-25\n";
+       << "  mcrc decrypt --key 3:20 --cipher 22-18-08-08-25 --version v1\n";
 }
 
 struct Args {
@@ -24,13 +24,13 @@ struct Args {
     std::optional<std::string_view> text;
     std::optional<std::string_view> cipher;
     bool reject = false;
+    mcrc::Version version = mcrc::Version::V2;
 };
 
 std::optional<Args> parse_args(int argc, char** argv) {
     if (argc < 2) {
         return std::nullopt;
     }
-    // Handle top-level -h / --help before treating argv[1] as a subcommand.
     if (std::string_view(argv[1]) == "-h" || std::string_view(argv[1]) == "--help") {
         return std::nullopt;
     }
@@ -52,6 +52,15 @@ std::optional<Args> parse_args(int argc, char** argv) {
             a.cipher = need_value("--cipher");
         } else if (flag == "--reject") {
             a.reject = true;
+        } else if (flag == "--version") {
+            auto val = need_value("--version");
+            if (val == "v1") {
+                a.version = mcrc::Version::V1;
+            } else if (val == "v2") {
+                a.version = mcrc::Version::V2;
+            } else {
+                throw std::runtime_error("--version must be v1 or v2");
+            }
         } else if (flag == "-h" || flag == "--help") {
             return std::nullopt;
         } else {
@@ -79,7 +88,7 @@ int main(int argc, char** argv) {
             }
             const auto policy = a.reject ? mcrc::NonLetterPolicy::Reject
                                          : mcrc::NonLetterPolicy::Strip;
-            std::cout << mcrc::encrypt(*a.text, *a.key, policy) << '\n';
+            std::cout << mcrc::encrypt(*a.text, *a.key, policy, a.version) << '\n';
             return 0;
         }
         if (a.command == "decrypt") {
@@ -87,7 +96,7 @@ int main(int argc, char** argv) {
                 print_usage(std::cerr);
                 return 1;
             }
-            std::cout << mcrc::decrypt(*a.cipher, *a.key) << '\n';
+            std::cout << mcrc::decrypt(*a.cipher, *a.key, a.version) << '\n';
             return 0;
         }
         print_usage(std::cerr);
