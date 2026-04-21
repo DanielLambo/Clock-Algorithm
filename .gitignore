@@ -6,3 +6,10 @@ build-*/
 *.exe
 .cache/
 compile_commands.json
+
+# AI assistant workspaces
+.claude/
+.kiro/
+.cursor/
+.aider*
+.windsurf/
