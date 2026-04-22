@@ -22,32 +22,35 @@
   :root {
     color-scheme: light;
 
-    --bg: #f7f6f1;
-    --bg-grid: #ece7d7;
+    --bg: #faf7f0;
+    --bg-grid: #efe9db;
     --bg-elev: #ffffff;
-    --ink: #15120e;
-    --ink-2: #3a342b;
-    --muted: #8a7f70;
-    --line: #ece6d8;
-    --line-strong: #ddd5c2;
-    --accent: #d95a13;
-    --accent-hover: #bd4d10;
+    --ink: #1f1a15;
+    --ink-2: #463d33;
+    --muted: #8b8073;
+    --line: #ece5d5;
+    --line-strong: #dcd2bc;
+    --accent: #a04b1f;
+    --accent-hover: #853d18;
     --accent-ink: #ffffff;
-    --accent-soft: #fde8d4;
-    --accent-glow: rgba(217, 90, 19, 0.35);
-    --cyan: #0891a8;
-    --cyan-soft: #d4edf2;
-    --err-bg: #fdeaea;
-    --err: #9a2323;
-    --ok: #296740;
+    --accent-soft: #f5dcc3;
+    --accent-glow: rgba(160, 75, 31, 0.25);
+    --cyan: #2c6b7a;
+    --cyan-soft: #d6e4e8;
+    --err-bg: #f7e3e3;
+    --err: #8a2020;
+    --ok: #2d6944;
     --shadow-sm: 0 1px 2px rgba(31, 27, 22, 0.04);
-    --shadow-md: 0 2px 8px -2px rgba(31, 27, 22, 0.06), 0 1px 3px rgba(31, 27, 22, 0.04);
-    --shadow-lg: 0 12px 32px -12px rgba(31, 27, 22, 0.18), 0 4px 12px -4px rgba(31, 27, 22, 0.08);
-    --radius: 16px;
+    --shadow-md: 0 2px 10px -4px rgba(31, 27, 22, 0.06), 0 1px 3px rgba(31, 27, 22, 0.04);
+    --shadow-lg: 0 16px 36px -16px rgba(31, 27, 22, 0.14), 0 4px 12px -6px rgba(31, 27, 22, 0.06);
+    --radius: 14px;
     --radius-sm: 10px;
   }
 
   *, *::before, *::after { box-sizing: border-box; }
+
+  /* Force hidden attribute to win over display:grid/flex etc */
+  [hidden] { display: none !important; }
 
   html { -webkit-text-size-adjust: 100%; }
 
@@ -58,9 +61,9 @@
     line-height: 1.55;
     color: var(--ink);
     background:
-      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(217, 90, 19, 0.08) 0%, transparent 50%),
-      linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0 / 48px 48px,
-      linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0 / 48px 48px,
+      radial-gradient(ellipse 80% 40% at 50% 0%, rgba(160, 75, 31, 0.06) 0%, transparent 65%),
+      linear-gradient(var(--bg-grid) 1px, transparent 1px) 0 0 / 64px 64px,
+      linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px) 0 0 / 64px 64px,
       var(--bg);
     background-attachment: fixed;
     -webkit-font-smoothing: antialiased;
@@ -75,25 +78,29 @@
   main { flex: 1; }
 
   .wrap {
-    max-width: 680px;
+    max-width: 960px;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 0 24px;
   }
 
   /* ---------- Hero ---------- */
 
   .hero {
-    padding: 64px 0 40px;
+    padding: 44px 0 28px;
     text-align: center;
+  }
+
+  @media (max-width: 560px) {
+    .hero { padding: 32px 0 20px; }
   }
 
   h1 {
     margin: 0 0 14px;
     font-family: 'Space Grotesk', 'Inter', sans-serif;
-    font-size: clamp(36px, 7vw, 60px);
+    font-size: clamp(36px, 5.6vw, 56px);
     font-weight: 700;
-    letter-spacing: -0.035em;
-    line-height: 1.02;
+    letter-spacing: -0.032em;
+    line-height: 1.04;
     color: var(--ink);
   }
   h1 .accent {
@@ -107,7 +114,7 @@
     margin: 0 auto;
     font-size: clamp(15px, 2.2vw, 17px);
     color: var(--ink-2);
-    max-width: 48ch;
+    max-width: 52ch;
     line-height: 1.55;
   }
 
@@ -117,15 +124,16 @@
     background: var(--bg-elev);
     border: 1px solid var(--line);
     border-radius: var(--radius);
-    box-shadow: var(--shadow-lg);
-    padding: 32px;
-    margin-bottom: 28px;
-    backdrop-filter: blur(8px);
+    box-shadow: var(--shadow-md);
+    padding: 28px 32px;
+    margin-bottom: 20px;
   }
 
+  @media (max-width: 720px) {
+    .card { padding: 22px 20px; }
+  }
   @media (max-width: 560px) {
-    .card { padding: 22px; }
-    .hero { padding: 44px 0 28px; }
+    .card { padding: 20px 16px; }
   }
 
   /* ---------- Mode toggle ---------- */
@@ -155,6 +163,16 @@
     color: var(--ink);
     box-shadow: var(--shadow-sm);
     font-weight: 600;
+  }
+  .mode-toggle button:disabled,
+  .speed-toggle button:disabled,
+  .version-toggle button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .mode-toggle[aria-disabled="true"],
+  .speed-toggle[aria-disabled="true"] {
+    position: relative;
   }
 
   /* ---------- Form fields ---------- */
@@ -227,13 +245,17 @@
   .opts {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
-    margin: 24px 0;
-    padding: 16px 0;
+    gap: 16px 20px;
+    margin: 22px 0;
+    padding: 14px 0;
     border-top: 1px solid var(--line);
     border-bottom: 1px solid var(--line);
     font-size: 14px;
     color: var(--ink-2);
+    align-items: center;
+  }
+  @media (max-width: 560px) {
+    .opts { gap: 12px 16px; }
   }
   .opts label {
     display: inline-flex;
@@ -535,12 +557,20 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+    position: sticky;
+    top: 0;
+    background: var(--bg-elev);
+    padding: 10px 2px 8px;
+    margin: -10px -2px 8px;
+    z-index: 4;
+    border-bottom: 1px solid var(--line);
   }
   .scene-header-controls {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 12px;
+    flex-wrap: wrap;
   }
   .scene-badge {
     font-family: 'JetBrains Mono', monospace;
@@ -582,16 +612,38 @@
     justify-content: center;
     gap: 14px;
     padding: 8px 0;
+    opacity: 1;
+    transition: opacity 220ms cubic-bezier(0.3, 0, 0.2, 1);
+  }
+  .scene-viewport.fading-out {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Caption flash-in on change */
+  .scene-caption.caption-flash {
+    animation: captionFlash 280ms cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+  }
+  @keyframes captionFlash {
+    from { opacity: 0.3; transform: translateY(-2px); }
+    to   { opacity: 1;   transform: translateY(0); }
   }
 
   .tile-row {
     display: flex;
-    gap: 7px;
+    gap: 6px;
     justify-content: center;
     flex-wrap: wrap;
     min-height: 56px;
     align-items: center;
+    row-gap: 6px;
   }
+  /* When the row has many tiles, shrink them so they stay readable */
+  .tile-row:has(.tile:nth-child(10)) .tile { width: 38px; height: 48px; font-size: 17px; }
+  .tile-row:has(.tile:nth-child(16)) .tile { width: 34px; height: 44px; font-size: 15px; }
+  .tile-row:has(.tile:nth-child(22)) .tile { width: 30px; height: 40px; font-size: 14px; }
+  .tile-row:has(.tile.num:nth-child(10)) .tile.num { width: 42px; font-size: 13px; }
+  .tile-row:has(.tile.num:nth-child(16)) .tile.num { width: 38px; font-size: 12px; }
   .tile-row-label {
     font-size: 10.5px;
     font-weight: 700;
@@ -909,6 +961,48 @@
     font-style: italic;
   }
 
+  /* Decrypt-direction table: cipher ring → slide → origin ring */
+  .undo-table {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    gap: 8px 14px;
+    align-items: center;
+    font-size: 13px;
+  }
+  .undo-table .undo-head {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .undo-table .undo-ring {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .undo-table .undo-slide {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    padding: 2px 10px;
+    text-align: center;
+    justify-self: start;
+  }
+  .undo-table .undo-arrow { color: var(--muted); }
+  .undo-note {
+    grid-column: 1 / -1;
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+    margin-top: 4px;
+    line-height: 1.45;
+  }
+
   @media (max-width: 560px) {
     .key-breakdown {
       flex-direction: column;
@@ -963,8 +1057,13 @@
     100% { box-shadow: 0 0 0 0 rgba(217, 90, 19, 0); transform: scale(1); }
   }
 
-  /* Pause / resume control in the scene header */
-  .scene-pause {
+  /* Pause / resume / cancel control in the scene header */
+  .scene-controls {
+    display: inline-flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .scene-pause, .scene-cancel {
     appearance: none;
     border: 1px solid var(--line-strong);
     background: var(--bg-elev);
@@ -978,9 +1077,14 @@
     align-items: center;
     gap: 6px;
     transition: all 120ms ease;
-    flex-shrink: 0;
   }
   .scene-pause:hover { border-color: var(--accent); color: var(--accent); }
+  .scene-cancel { color: var(--err); }
+  .scene-cancel:hover {
+    background: var(--err-bg);
+    border-color: var(--err);
+    color: var(--err);
+  }
   .scene-pause.paused {
     background: var(--accent);
     color: var(--accent-ink);
@@ -1100,6 +1204,17 @@
     stroke-linecap: round;
     animation: arrowDraw 520ms cubic-bezier(0.4, 0, 0.2, 1) both;
   }
+  .scene-clock .swap-arrow-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    fill: var(--accent);
+    paint-order: stroke;
+    stroke: var(--bg-elev);
+    stroke-width: 4;
+    stroke-linejoin: round;
+    animation: arrowDraw 520ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
   @keyframes arrowDraw {
     from { stroke-dasharray: 200; stroke-dashoffset: 200; opacity: 0; }
     to   { stroke-dasharray: 200; stroke-dashoffset: 0; opacity: 1; }
@@ -1167,17 +1282,60 @@
   /* ---------- How it works ---------- */
 
   .explainer {
-    margin-top: 28px;
-    padding: 32px;
+    margin-top: 20px;
+    padding: 28px 32px;
     border: 1px solid var(--line);
     border-radius: var(--radius);
     background: var(--bg-elev);
+    box-shadow: var(--shadow-sm);
+  }
+  @media (max-width: 720px) {
+    .explainer { padding: 22px 20px; }
+  }
+  @media (max-width: 560px) {
+    .explainer { padding: 20px 16px; }
+  }
+  .explainer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  @media (max-width: 560px) {
+    .explainer-header { flex-direction: column; align-items: stretch; }
+    .explainer-tabs { align-self: flex-start; }
   }
   .explainer h2 {
-    margin: 0 0 6px;
+    margin: 0;
     font-size: 22px;
     font-weight: 600;
     letter-spacing: -0.015em;
+  }
+  .explainer-tabs {
+    display: inline-flex;
+    background: #f4efe4;
+    padding: 3px;
+    border-radius: 8px;
+  }
+  .explainer-tabs button {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    font: 500 13px/1 'Inter', sans-serif;
+    color: var(--ink-2);
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 140ms ease;
+  }
+  .explainer-tabs button:hover { color: var(--ink); }
+  .explainer-tabs button.active {
+    background: var(--bg-elev);
+    color: var(--ink);
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
   }
   .explainer p.sub {
     margin: 0 0 22px;
@@ -1249,7 +1407,7 @@
 
     <section class="hero">
       <h1>Mirror Clock<br/><span class="accent">Reverse Cipher</span></h1>
-      <p class="tagline">Four reversible steps turn a word into a string of numbers. The time key sets how far each row of letters slides before swapping &mdash; different time, different ciphertext.</p>
+      <p class="tagline">A teaching cipher. Turn a word into numbers using a time key. Change the time, change the output.</p>
     </section>
 
     <section class="card" aria-label="Cipher tool">
@@ -1293,6 +1451,13 @@
             <button data-speed="fast" type="button" role="radio" title="Quick animation">Fast</button>
           </div>
         </div>
+        <div class="speed-group" role="radiogroup" aria-label="Stage 1 visualization style">
+          <span class="version-label">Stage 1</span>
+          <div class="speed-toggle">
+            <button data-style="strip" class="active" type="button" role="radio" aria-checked="true" title="Two horizontal rows with L-shaped swap arrows">Line</button>
+            <button data-style="clock" type="button" role="radio" aria-checked="false" title="Dual-ring analog clock with radial arrows">Clock</button>
+          </div>
+        </div>
         <label id="opt-reject-wrap"><input type="checkbox" id="opt-reject" /> Reject non-letters</label>
       </div>
 
@@ -1306,7 +1471,10 @@
         <div class="scene-header">
           <div class="scene-header-controls">
             <span class="scene-badge" id="scene-badge">Stage 0</span>
-            <button class="scene-pause" id="scene-pause" type="button" hidden>&#9208; Pause</button>
+            <div class="scene-controls">
+              <button class="scene-pause" id="scene-pause" type="button" hidden>&#9208; Pause</button>
+              <button class="scene-cancel" id="scene-cancel" type="button" hidden>&#215; Stop</button>
+            </div>
           </div>
           <div class="scene-caption" id="scene-caption">&mdash;</div>
         </div>
@@ -1320,38 +1488,29 @@
     </section>
 
     <section class="explainer">
-      <h2>How MCRC works</h2>
-      <p class="sub">Four puzzles stacked on top of each other. Every step is reversible, so decryption is just the steps in reverse.</p>
+      <div class="explainer-header">
+        <h2>How MCRC works</h2>
+        <div class="explainer-tabs" role="tablist">
+          <button id="ex-enc" class="active" type="button" role="tab" aria-selected="true">Encrypt</button>
+          <button id="ex-dec" type="button" role="tab" aria-selected="false">Decrypt</button>
+        </div>
+      </div>
+      <p class="sub" id="ex-sub">Four reversible stages. Every step can be undone.</p>
 
-      <div class="stages-explain">
+      <div class="stages-explain" id="ex-body-encrypt">
         <div class="stage-explain">
           <div class="num">1</div>
           <div>
             <h3>Clockface swap</h3>
-            <p><b>The point of this stage is the key.</b> It's the ONLY step that uses the time — so this is what makes the same word come out differently when you change the time.</p>
-            <p style="margin-top:8px">The alphabet is laid out in two rows:</p>
-            <ul style="margin-top:4px;padding-left:18px;line-height:1.8">
-              <li><b>Inner</b> row: <code>A B C D E F G H I J K L</code></li>
-              <li><b>Outer</b> row: <code>N O P Q R S T U V W X Y</code></li>
-              <li><code>M</code> and <code>Z</code> sit in the centre and never move.</li>
+            <p>The alphabet splits into two rows: inner <code>A–L</code>, outer <code>N–Y</code>. <code>M</code> and <code>Z</code> stay in the centre.</p>
+            <p style="margin-top:6px">The key gives each row a slide amount:</p>
+            <ul style="margin-top:4px;padding-left:18px;line-height:1.7">
+              <li>Inner slide = <b>hour</b></li>
+              <li>Outer slide = <b>minute ÷ 5</b></li>
             </ul>
-            <p style="margin-top:8px"><b>The key gives you two slide amounts</b>, one per row — the hour hand says how far inner letters slide, the minute hand (÷ 5) says how far outer letters slide:</p>
-            <ul style="margin-top:4px;padding-left:18px;line-height:1.8">
-              <li>Key <code>3:20</code> → inner slide = <b>3</b> (hour), outer slide = <b>4</b> (20 ÷ 5).</li>
-              <li>Key <code>7:45</code> → inner slide = <b>7</b>, outer slide = <b>9</b>.</li>
-              <li>Key <code>12:00</code> → both slides are <b>0</b>. Letters just swap straight across.</li>
-            </ul>
-            <p style="margin-top:8px">To encrypt each letter, do two moves:</p>
-            <ol style="margin-top:4px;padding-left:18px;line-height:1.8">
-              <li><b>Slide</b> the letter sideways along its own row by that row's amount.</li>
-              <li><b>Swap</b> straight across to the other row at the new column.</li>
-            </ol>
-            <p style="margin-top:8px">Worked example at <code>3:20</code>:</p>
-            <ul style="margin-top:4px;padding-left:18px;line-height:1.8">
-              <li><code>Q</code> is outer at column 4. Outer slide = 4. 4 + 4 = col 8. Swap to inner col 8 → <code>H</code>. So <code>Q → H</code>.</li>
-              <li><code>A</code> is inner at column 1. Inner slide = 3. 1 + 3 = col 4. Swap to outer col 4 → <code>Q</code>. So <code>A → Q</code>.</li>
-            </ul>
-            <p style="margin-top:8px"><b>Why two different slides?</b> Because the hour and minute hands point at different numbers, they give independent amounts. That's what makes the key space bigger (12 hours × 12 minute positions = <b>144 possible keys</b>) and makes the cipher actually depend on the time.</p>
+            <p style="margin-top:6px">For each letter: slide along its row by that amount, then swap straight across.</p>
+            <p style="margin-top:6px"><b>Example at <code>3:20</code></b> (slides 3 and 4): <code>Q</code> at outer col 4 → slide +4 → col 8 → swap → inner <code>H</code>.</p>
+            <p style="margin-top:6px;color:var(--muted);font-size:13px">12 × 12 = 144 possible keys. This is the only stage where the key matters.</p>
           </div>
         </div>
 
@@ -1374,8 +1533,50 @@
         <div class="stage-explain">
           <div class="num">4</div>
           <div>
-            <h3>Mirror the numbers</h3>
-            <p>Reverse the list of codes. <code>25-08-08-18-22</code> becomes <code>22-18-08-08-25</code>. Done.</p>
+            <h3>Swap consecutive number pairs</h3>
+            <p>Swap every adjacent pair: <code>(a, b) → (b, a)</code>. Odd last code stays.</p>
+            <p style="margin-top:6px">Example: <code>21-05-05-14-18</code> → <code>05-21-14-05-18</code>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="stages-explain" id="ex-body-decrypt" hidden>
+        <div class="stage-explain">
+          <div class="num">4</div>
+          <div>
+            <h3>Undo stage 4 — swap the pairs again</h3>
+            <p>Take the ciphertext and swap every adjacent pair a second time. Swap-pairs is its own inverse: <code>(a,b) → (b,a) → (a,b)</code>. Odd last element still stays put. <code>05-21-14-05-18</code> becomes <code>21-05-05-14-18</code>.</p>
+          </div>
+        </div>
+
+        <div class="stage-explain">
+          <div class="num">3</div>
+          <div>
+            <h3>Undo stage 3 — numbers back to letters</h3>
+            <p>Same chart as stage 3 forward (<code>A=25, B=24, &hellip;, Z=00</code>), read the other way. Each two-digit code becomes its matching letter. <code>21-05-05-14-18</code> becomes <code>EUULH</code>.</p>
+          </div>
+        </div>
+
+        <div class="stage-explain">
+          <div class="num">2</div>
+          <div>
+            <h3>Undo stage 2 — unflip the letters</h3>
+            <p>Reverse the string again. Mirror is its own inverse. <code>EUULH</code> becomes <code>HLUUE</code>.</p>
+          </div>
+        </div>
+
+        <div class="stage-explain">
+          <div class="num">1</div>
+          <div>
+            <h3>Undo stage 1 — unswap with the key</h3>
+            <p>For each cipher letter, slide <b>backwards</b> by the appropriate amount, then swap across.</p>
+            <p style="margin-top:6px">Slide source flips in reverse:</p>
+            <ul style="margin-top:4px;padding-left:18px;line-height:1.7">
+              <li>Inner cipher letter → slide left by <b>minute ÷ 5</b>, swap up</li>
+              <li>Outer cipher letter → slide left by <b>hour</b>, swap down</li>
+            </ul>
+            <p style="margin-top:6px"><b>Example at <code>3:20</code></b>: <code>H</code> at inner col 8 → slide −4 → col 4 → swap up → <code>Q</code>. So <code>HLUUE → QUEEN</code>.</p>
+            <p style="margin-top:6px;color:var(--muted);font-size:13px">Wrong key gives garbled letters, not an error.</p>
           </div>
         </div>
       </div>
@@ -1390,6 +1591,7 @@
     <a href="https://github.com/DanielLambo/Clock-Algorithm" target="_blank" rel="noopener">Source on GitHub</a>
   </div>
 </footer>
+
 
 <script>
 (() => {
@@ -1480,6 +1682,17 @@
 
   function reverseString(s) { return s.split('').reverse().join(''); }
 
+  // Stage-4 permutation: swap each adjacent pair (0,1)(2,3)…; if the length is
+  // odd, the final element stays in place. Self-inverse — applying twice is a
+  // no-op, so decrypt reuses it.
+  function swapPairsArr(arr) {
+    const out = arr.slice();
+    for (let i = 0; i + 1 < out.length; i += 2) {
+      const tmp = out[i]; out[i] = out[i + 1]; out[i + 1] = tmp;
+    }
+    return out;
+  }
+
   function lettersToNums(letters) {
     const parts = [];
     for (const c of letters) {
@@ -1509,14 +1722,16 @@
     const s1 = clockfaceEncode(normalised, k);
     const s2 = reverseString(s1);
     const s3 = lettersToNums(s2);
-    const s4 = s3.split('-').reverse().join('-');
+    // Stage 4: swap adjacent pairs (replaces the old full-list reverse).
+    const s4 = swapPairsArr(s3.split('-')).join('-');
     return { normalised, s1, s2, s3, s4 };
   }
 
   function decrypt(cipher, key) {
     const k = parseTimeKey(key);
     if (!cipher || !cipher.trim()) throw new InvalidCiphertext('empty ciphertext');
-    const undo4 = cipher.trim().split('-').reverse().join('-');
+    // Stage 4 undo: swap pairs again (swap-pairs is self-inverse).
+    const undo4 = swapPairsArr(cipher.trim().split('-')).join('-');
     const undo3 = numsToLetters(undo4);
     const undo2 = reverseString(undo3);
     const undo1 = clockfaceDecode(undo2, k);
@@ -1560,7 +1775,8 @@
   const elKey = $('key');
   const elBody = $('body');
   const elBodyLabel = $('body-label');
-  const elSpeedBtns = Array.from(document.querySelectorAll('.speed-toggle button'));
+  const elSpeedBtns = Array.from(document.querySelectorAll('.speed-toggle button[data-speed]'));
+  const elStyleBtns = Array.from(document.querySelectorAll('.speed-toggle button[data-style]'));
   const elReject = $('opt-reject');
   const elRejectWrap = $('opt-reject-wrap');
   const elGo = $('go');
@@ -1571,10 +1787,34 @@
   let mode = 'encrypt';
   const VERSION = 'v2'; // single algorithm shipped to the site
   let speed = 'normal';
+  let stage1Style = 'strip';
+  try {
+    const saved = localStorage.getItem('mcrc.stage1Style');
+    if (saved === 'strip' || saved === 'clock') stage1Style = saved;
+  } catch (_) { /* ignore storage errors */ }
   let lastResult = '';
   let animationRunning = false;
 
   const elScenePause = $('scene-pause');
+  const elSceneCancel = $('scene-cancel');
+  const elExEnc = $('ex-enc');
+  const elExDec = $('ex-dec');
+  const elExBodyEnc = $('ex-body-encrypt');
+  const elExBodyDec = $('ex-body-decrypt');
+  const elExSub = $('ex-sub');
+
+  function setExplainerView(view) {
+    const enc = view === 'encrypt';
+    elExEnc.classList.toggle('active', enc);
+    elExDec.classList.toggle('active', !enc);
+    elExEnc.setAttribute('aria-selected', enc);
+    elExDec.setAttribute('aria-selected', !enc);
+    elExBodyEnc.hidden = !enc;
+    elExBodyDec.hidden = enc;
+    elExSub.textContent = enc
+      ? 'Four reversible stages. Every step can be undone.'
+      : 'Run the four stages in reverse. Read top to bottom.';
+  }
   function setPaused(p) {
     paused = p;
     if (elScenePause) {
@@ -1584,6 +1824,14 @@
     elScene.classList.toggle('paused', paused);
   }
   function togglePause() { setPaused(!paused); }
+
+  // Lock pipeline-affecting controls while an animation is running so changing
+  // them mid-run can't trash the DOM state. Pause button stays usable.
+  function setControlsLocked(locked) {
+    [elMEnc, elMDec, ...elSpeedBtns, ...elStyleBtns].forEach(btn => {
+      if (btn) btn.disabled = locked;
+    });
+  }
 
   const SPEED_CONFIG = {
     off:    { stage: 0,    char: 0   },
@@ -1599,6 +1847,18 @@
       b.classList.toggle('active', on);
       b.setAttribute('aria-checked', on);
     });
+  }
+
+  function setStage1Style(next) {
+    if (animationRunning) return;
+    if (next !== 'strip' && next !== 'clock') return;
+    stage1Style = next;
+    elStyleBtns.forEach(b => {
+      const on = b.dataset.style === next;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-checked', on);
+    });
+    try { localStorage.setItem('mcrc.stage1Style', next); } catch (_) {}
   }
 
   // Pause-aware sleep: counts down only while `paused` is false.
@@ -1638,6 +1898,7 @@
   }
 
   function setMode(next) {
+    if (animationRunning) return; // locked during animation
     mode = next;
     const enc = mode === 'encrypt';
     elMEnc.classList.toggle('active', enc);
@@ -1645,10 +1906,11 @@
     elMEnc.setAttribute('aria-selected', enc);
     elMDec.setAttribute('aria-selected', !enc);
     elBodyLabel.textContent = enc ? 'Plaintext' : 'Ciphertext';
-    elBody.placeholder = enc ? 'QUEEN' : '22-18-08-08-25';
+    elBody.placeholder = enc ? 'QUEEN' : '05-21-14-05-18';
     elGo.textContent = enc ? 'Encrypt' : 'Decrypt';
     elRejectWrap.style.display = enc ? '' : 'none';
     clearResult(enc ? 'Press Encrypt to see the ciphertext.' : 'Press Decrypt to recover the plaintext.');
+    setExplainerView(enc ? 'encrypt' : 'decrypt');
   }
 
   function clearResult(msg) {
@@ -1665,7 +1927,7 @@
       ['Stage 1 — Clockface swap', t.s1],
       ['Stage 2 — Mirror letters', t.s2],
       ['Stage 3 — Letters to numbers', t.s3],
-      ['Stage 4 — Mirror numbers', t.s4],
+      ['Stage 4 — Swap number pairs', t.s4],
     ];
   }
 
@@ -1692,6 +1954,34 @@
   function setCaption(badge, main, detail) {
     elSceneBadge.textContent = badge;
     elSceneCap.innerHTML = `${escapeHtml(main)}${detail ? `<span class="detail">${escapeHtml(detail)}</span>` : ''}`;
+    elSceneCap.classList.remove('caption-flash');
+    void elSceneCap.offsetHeight;
+    elSceneCap.classList.add('caption-flash');
+  }
+
+  // Fade the scene viewport out, swap its HTML, fade it back in.
+  // First call (empty viewport) skips the fade-out to avoid a delay at start.
+  const SCENE_FADE_MS = 220;
+  async function transitionToScene(html) {
+    const firstRender = !elSceneVP.innerHTML.trim();
+    if (firstRender) {
+      elSceneVP.innerHTML = html;
+      return;
+    }
+    elSceneVP.classList.add('fading-out');
+    await sleep(SCENE_FADE_MS);
+    elSceneVP.innerHTML = html;
+    void elSceneVP.offsetHeight;
+    elSceneVP.classList.remove('fading-out');
+    await sleep(SCENE_FADE_MS);
+  }
+
+  function scrollToResult() {
+    // Anchor the viewport so the result + scene are top-of-screen.
+    requestAnimationFrame(() => {
+      const y = elResult.getBoundingClientRect().top + window.pageYOffset - 16;
+      window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+    });
   }
 
   // Letter/ring helpers.
@@ -1754,8 +2044,40 @@
   function clockEl() { return elSceneVP.querySelector('.scene-clock'); }
 
   // ---------- Key breakdown (how the time becomes two slide amounts) ----------
-  function renderKeyBreakdown(keyStr, parsed, hOff, mOff) {
+  // direction: 'encrypt' shows which ring uses which slide when SENDING letters.
+  //            'decrypt' shows which ring uses which slide when RECEIVING cipher
+  //            letters — these are reversed because the slide belongs to the
+  //            ORIGIN ring, not to whichever ring the cipher letter is currently on.
+  function renderKeyBreakdown(keyStr, parsed, hOff, mOff, direction = 'encrypt') {
     const noShift = hOff === 0 && mOff === 0;
+    if (direction === 'decrypt') {
+      return `
+        <div class="key-breakdown" role="region" aria-label="How to unslide cipher letters">
+          <div class="key-breakdown-time">${escapeHtml(keyStr)}</div>
+          <div class="key-breakdown-mapping">
+            <div class="undo-table">
+              <div class="undo-head">Cipher on</div>
+              <div class="undo-head">Slide</div>
+              <div class="undo-head">Find on</div>
+
+              <div class="undo-ring">Inner (A–L)</div>
+              <div class="undo-slide">&minus;${mOff}</div>
+              <div class="undo-ring">Outer (N–Y)</div>
+
+              <div class="undo-ring">Outer (N–Y)</div>
+              <div class="undo-slide">&minus;${hOff}</div>
+              <div class="undo-ring">Inner (A–L)</div>
+
+              <div class="undo-note">
+                Slides flip rings because the amount belongs to the <b>source</b> ring.
+                Inner cipher letters came from outer (slid by minute&thinsp;&divide;&thinsp;5). Outer cipher letters came from inner (slid by hour).
+                ${noShift ? ' At <code>12:00</code> both are 0, so cipher letters simply swap straight back.' : ''}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
     return `
       <div class="key-breakdown" role="region" aria-label="How the key becomes slide amounts">
         <div class="key-breakdown-time">${escapeHtml(keyStr)}</div>
@@ -1776,6 +2098,31 @@
         </div>
       </div>
     `;
+  }
+
+  // ---------- Stage 1 style dispatch (strip vs clock) ----------
+  function renderStage1Viz() {
+    return stage1Style === 'clock' ? renderSceneClockSVG() : renderStripHTML();
+  }
+  function highlightStage1Letter(letter, kind) {
+    if (stage1Style === 'clock') highlightLetter(letter, kind);
+    else highlightStripLetter(letter, kind);
+  }
+  function clearStage1Highlights() {
+    if (stage1Style === 'clock') clearClockHighlights();
+    else clearStripHighlights();
+  }
+  function drawStage1Arrow(from, to, shift) {
+    if (stage1Style === 'clock') drawClockArrow(from, to, shift);
+    else drawStripArrow(from, to, shift);
+  }
+  function setStage1ShiftPill(which, amount) {
+    // Only the strip has inline shift pills next to row labels.
+    if (stage1Style !== 'strip') return;
+    const el = $(which === 'inner' ? 'shift-inner' : 'shift-outer');
+    if (!el || amount <= 0) return;
+    el.textContent = `+${amount}`;
+    el.classList.add('visible', 'flash');
   }
 
   // ---------- Strip visualisation (linear two-row layout) ----------
@@ -1954,7 +2301,7 @@
     hl.appendChild(circle);
   }
 
-  function drawClockArrow(fromLetter, toLetter) {
+  function drawClockArrow(fromLetter, toLetter, shift) {
     const svg = clockEl();
     if (!svg) return;
     const fi = currentLetterPos(fromLetter);
@@ -1973,6 +2320,20 @@
     line.setAttribute('y2', tp.y.toFixed(1));
     line.setAttribute('class', 'swap-arrow');
     arrows.appendChild(line);
+
+    if (shift && shift !== 0) {
+      // Label near the middle of the arrow, nudged outward so it doesn't sit under the line.
+      const mx = (fp.x + tp.x) / 2;
+      const my = (fp.y + tp.y) / 2;
+      const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      label.setAttribute('x', mx.toFixed(1));
+      label.setAttribute('y', my.toFixed(1));
+      label.setAttribute('text-anchor', 'middle');
+      label.setAttribute('dominant-baseline', 'central');
+      label.setAttribute('class', 'swap-arrow-label');
+      label.textContent = shift > 0 ? `+${shift}` : `−${Math.abs(shift)}`;
+      arrows.appendChild(label);
+    }
   }
 
   function clearClockHighlights() {
@@ -2032,13 +2393,12 @@
   // ----- Acts -----
 
   async function act0Intro(input, cfg) {
-    setCaption('Input',
-      'Normalised plaintext',
-      'Strip non-letters, uppercase. This is the string we feed into the pipeline.');
-    elSceneVP.innerHTML = `
+    setCaption('Input', 'Normalised plaintext',
+      'Uppercase, letters only.');
+    await transitionToScene(`
       <div class="tile-row-label">Your word, letter by letter</div>
       <div class="tile-row" id="intro-row"></div>
-    `;
+    `);
     const row = $('intro-row');
     if (!input.length) {
       row.innerHTML = '<div style="color:var(--muted);font-style:italic">(empty)</div>';
@@ -2059,12 +2419,12 @@
     const hOff = parsed.hour % 12;
     const mOff = Math.floor(parsed.minute / 5);
 
-    setCaption('Stage 1', 'Clockface swap — setting up the rings',
-      `Inner ring holds A–L. Outer ring holds N–Y. M and Z sit in the centre and never swap.`);
+    setCaption('Stage 1', 'Clockface swap',
+      `Inner row A–L, outer row N–Y. M and Z stay in the centre.`);
 
-    elSceneVP.innerHTML = `
+    await transitionToScene(`
       ${renderKeyBreakdown(keyStr, parsed, hOff, mOff)}
-      ${renderStripHTML()}
+      ${renderStage1Viz()}
       <div style="display:flex;gap:32px;justify-content:center;flex-wrap:wrap;margin-top:12px">
         <div>
           <div class="tile-row-label">Input</div>
@@ -2075,7 +2435,7 @@
           <div class="tile-row" id="cf-out"></div>
         </div>
       </div>
-    `;
+    `);
 
     const inRow = $('cf-in');
     const outRow = $('cf-out');
@@ -2091,33 +2451,25 @@
     await sleep(Math.max(cfg.stage * 0.4, 120));
 
     // ---------- Shift-preview phase ----------
-    // Reveal the per-ring shift amounts set by the key, BEFORE any swaps.
     if (hOff > 0 || mOff > 0) {
-      setCaption('Stage 1 · the key sets the slides',
-        `The key ${keyStr} picks two slide amounts — one per row`,
-        `The HOUR hand (${parsed.hour}) says how far inner letters slide. The MINUTE hand (${parsed.minute} ÷ 5 = ${mOff}) says how far outer letters slide. Different key = different slides = different ciphertext.`);
+      setCaption('Stage 1 · slides',
+        `Key ${keyStr} sets two slide amounts`,
+        `Hour ${parsed.hour} → inner slide. Minute ${parsed.minute} ÷ 5 = ${mOff} → outer slide.`);
 
-      if (mOff > 0) {
-        const el = $('shift-outer');
-        el.textContent = `+${mOff}`;
-        el.classList.add('visible', 'flash');
-      }
-      await sleep(cfg.stage * 0.7);
+      setStage1ShiftPill('outer', mOff);
+      await sleep(cfg.stage * 0.6);
+      setStage1ShiftPill('inner', hOff);
+      await sleep(cfg.stage * 1.2);
 
-      if (hOff > 0) {
-        const el = $('shift-inner');
-        el.textContent = `+${hOff}`;
-        el.classList.add('visible', 'flash');
-      }
-      await sleep(cfg.stage * 1.5);
-
-      setCaption('Stage 1 · swap each letter',
-        'Two moves per letter: slide, then swap',
-        `For every letter, watch the L-shaped arrow: (1) it first SLIDES sideways along its own row by the row's slide amount, (2) then SWAPS straight across to the other row at the new column.`);
+      setCaption('Stage 1 · swap',
+        'Slide then swap — for every letter',
+        stage1Style === 'clock'
+          ? `Arrow crosses the rings; label shows the slide amount.`
+          : `Horizontal = slide by the row's amount. Vertical = swap to the other row.`);
     } else {
       setCaption('Stage 1',
         `Key ${keyStr} → no slide`,
-        'Both hands point at 12, so both slide amounts are zero. Each letter swaps straight across. Try 3:20 to see the slides in action.');
+        'Both hands at 12. Letters swap straight across.');
     }
 
     await sleep(cfg.stage * 0.6);
@@ -2130,14 +2482,14 @@
       const shift = getLetterShift(c, hOff, mOff);
 
       inputTiles[i].classList.add('hl');
-      highlightStripLetter(c, 'hl');
+      highlightStage1Letter(c, 'hl');
       await sleep(cfg.stage);
 
       if (c !== 'M' && c !== 'Z') {
-        highlightStripLetter(oc, 'partner');
-        drawStripArrow(c, oc, shift);
+        highlightStage1Letter(oc, 'partner');
+        drawStage1Arrow(c, oc, shift);
       }
-      // Give enough time to see the horizontal-then-vertical draw
+      // Give enough time to see the arrow draw
       await sleep(cfg.stage);
 
       const out = document.createElement('div');
@@ -2149,24 +2501,24 @@
       inputTiles[i].classList.remove('hl');
       inputTiles[i].classList.add('dim');
       out.classList.remove('partner');
-      clearStripHighlights();
+      clearStage1Highlights();
     }
     await sleep(cfg.stage);
   }
 
   async function act2MirrorLetters(input, output, cfg, reverse = false) {
     setCaption(reverse ? 'Stage 2 · undo' : 'Stage 2',
-      reverse ? 'Unflip the letter order' : 'Mirror — reverse the string',
+      reverse ? 'Unflip the letters' : 'Reverse the letters',
       reverse
-        ? 'Reverse the letters again to undo the first mirror. Mirror is its own inverse — same move, it puts them back.'
-        : 'Flip the letter order. First becomes last, last becomes first. No lookup, just read it backwards.');
-    elSceneVP.innerHTML = `
+        ? 'Reverse again — mirror is its own inverse.'
+        : 'First becomes last, last becomes first.');
+    await transitionToScene(`
       <div class="tile-row-label">Before</div>
       <div class="tile-row" id="mir-before"></div>
       <div class="row-arrow">↓ reverse order ↓</div>
       <div class="tile-row-label">After</div>
       <div class="tile-row" id="mir-after"></div>
-    `;
+    `);
     const before = $('mir-before');
     const after = $('mir-after');
     for (const c of input) {
@@ -2199,16 +2551,15 @@
   }
 
   async function act3LettersToNumbers(input, output, cfg) {
-    setCaption('Stage 3',
-      'Reverse cipher — letters become numbers',
-      'Flip the alphabet: A=25, B=24, …, Z=00. Each letter gets a two-digit code. Formula: 25 − (alphabet index).');
-    elSceneVP.innerHTML = `
+    setCaption('Stage 3', 'Letters to numbers',
+      'Reversed alphabet: A=25, B=24, …, Z=00.');
+    await transitionToScene(`
       <div class="tile-row-label">Letters</div>
       <div class="tile-row" id="num-letters"></div>
       <div class="row-arrow">↓ look up each letter ↓</div>
       <div class="tile-row-label">Numbers</div>
       <div class="tile-row" id="num-codes"></div>
-    `;
+    `);
     const lettersRow = $('num-letters');
     const codesRow = $('num-codes');
     for (const c of input) {
@@ -2248,19 +2599,20 @@
     await sleep(cfg.stage);
   }
 
-  async function act4MirrorNumbers(input, output, cfg, reverse = false) {
+  async function act4SwapPairs(input, output, cfg, reverse = false) {
     setCaption(reverse ? 'Stage 4 · undo' : 'Stage 4',
-      reverse ? 'Unflip the number list' : 'Mirror numbers — reverse the list',
+      reverse ? 'Unswap the pairs' : 'Swap consecutive pairs',
       reverse
-        ? 'Take the ciphertext and reverse the list of number groups to undo the final mirror.'
-        : 'Same as stage 2 but on the number groups. This is your final ciphertext.');
-    elSceneVP.innerHTML = `
+        ? 'Swap each pair again — swap-pairs is its own inverse.'
+        : 'Swap every adjacent pair: (a, b) → (b, a). Odd last number stays.');
+
+    await transitionToScene(`
       <div class="tile-row-label">Before</div>
       <div class="tile-row" id="mn-before"></div>
-      <div class="row-arrow">↓ reverse order ↓</div>
-      <div class="tile-row-label">Final ciphertext</div>
+      <div class="row-arrow">↓ swap each pair — (a, b) ↔ (b, a) ↓</div>
+      <div class="tile-row-label">${reverse ? 'Recovered order' : 'Final ciphertext'}</div>
       <div class="tile-row" id="mn-after"></div>
-    `;
+    `);
     const before = $('mn-before');
     const after = $('mn-after');
     const inCodes = input ? input.split('-') : [];
@@ -2273,21 +2625,41 @@
     }
     await sleep(cfg.stage * 0.8);
 
-    const n = inCodes.length;
-    for (let i = 0; i < n; i++) {
-      const srcIdx = n - 1 - i;
-      const src = before.children[srcIdx];
-      src.classList.add('hl');
-      await sleep(Math.max(cfg.char * 3, 60));
+    // Process pairs left-to-right. For each pair, highlight both, then emit
+    // them into the "after" row in swapped order. Lone tile at the end stays.
+    for (let i = 0; i < inCodes.length; i += 2) {
+      const left = before.children[i];
+      const right = i + 1 < inCodes.length ? before.children[i + 1] : null;
 
-      const tile = document.createElement('div');
-      tile.className = 'tile num enter';
-      tile.textContent = outCodes[i];
-      after.appendChild(tile);
-      await sleep(Math.max(cfg.char * 3, 60));
+      left.classList.add('hl');
+      if (right) right.classList.add('hl');
+      await sleep(cfg.stage * 0.7);
 
-      src.classList.remove('hl');
-      src.classList.add('dim');
+      if (right) {
+        const swapped1 = document.createElement('div');
+        swapped1.className = 'tile num enter';
+        swapped1.textContent = outCodes[i];      // = inCodes[i + 1]
+        after.appendChild(swapped1);
+        await sleep(Math.max(cfg.char * 3, 70));
+
+        const swapped2 = document.createElement('div');
+        swapped2.className = 'tile num enter';
+        swapped2.textContent = outCodes[i + 1];  // = inCodes[i]
+        after.appendChild(swapped2);
+        await sleep(Math.max(cfg.char * 3, 70));
+      } else {
+        // Odd one out — stays in its position.
+        const lone = document.createElement('div');
+        lone.className = 'tile num enter';
+        lone.textContent = outCodes[i];
+        lone.style.borderStyle = 'dashed';
+        after.appendChild(lone);
+        await sleep(Math.max(cfg.char * 3, 70));
+      }
+
+      left.classList.remove('hl');
+      left.classList.add('dim');
+      if (right) { right.classList.remove('hl'); right.classList.add('dim'); }
     }
     await sleep(cfg.stage);
   }
@@ -2296,11 +2668,11 @@
 
   async function act0IntroCipher(cipher, cfg) {
     setCaption('Input', 'Your ciphertext',
-      'This is what you entered. We will work backwards, undoing each stage, to recover the original word.');
-    elSceneVP.innerHTML = `
+      'We will undo each stage to recover the original word.');
+    await transitionToScene(`
       <div class="tile-row-label">Your ciphertext, piece by piece</div>
       <div class="tile-row" id="intro-row"></div>
-    `;
+    `);
     const row = $('intro-row');
     const codes = cipher ? cipher.split('-') : [];
     if (!codes.length) {
@@ -2318,16 +2690,15 @@
   }
 
   async function act3NumbersToLetters(numbers, letters, cfg) {
-    setCaption('Stage 3 · undo',
-      'Decode each number back to a letter',
-      'Same chart as stage 3 forward (A=25, B=24, …, Z=0), just read the other way. Each number becomes its matching letter.');
-    elSceneVP.innerHTML = `
+    setCaption('Stage 3 · undo', 'Numbers back to letters',
+      'Same chart (A=25, B=24, …, Z=0) read the other way.');
+    await transitionToScene(`
       <div class="tile-row-label">Numbers</div>
       <div class="tile-row" id="num-codes"></div>
       <div class="row-arrow">↓ look up each number ↓</div>
       <div class="tile-row-label">Letters</div>
       <div class="tile-row" id="num-letters"></div>
-    `;
+    `);
     const codesRow = $('num-codes');
     const lettersRow = $('num-letters');
     const codeList = numbers ? numbers.split('-') : [];
@@ -2370,12 +2741,12 @@
     const hOff = parsed.hour % 12;
     const mOff = Math.floor(parsed.minute / 5);
 
-    setCaption('Stage 1 · undo', 'Undo the clockface swap with the key',
-      `Now go in reverse: for each cipher letter, slide BACKWARDS along its row by the row's slide, then swap across to the other ring. That recovers the original plaintext letter.`);
+    setCaption('Stage 1 · undo', 'Find each cipher letter’s origin',
+      `The slide belongs to the SOURCE ring. Inner cipher letters came from outer (undo minute ÷ 5). Outer cipher letters came from inner (undo hour).`);
 
-    elSceneVP.innerHTML = `
-      ${renderKeyBreakdown(keyStr, parsed, hOff, mOff)}
-      ${renderStripHTML()}
+    await transitionToScene(`
+      ${renderKeyBreakdown(keyStr, parsed, hOff, mOff, 'decrypt')}
+      ${renderStage1Viz()}
       <div style="display:flex;gap:32px;justify-content:center;flex-wrap:wrap;margin-top:12px">
         <div>
           <div class="tile-row-label">Cipher letters</div>
@@ -2386,7 +2757,7 @@
           <div class="tile-row" id="cf-out"></div>
         </div>
       </div>
-    `;
+    `);
 
     const inRow = $('cf-in');
     const outRow = $('cf-out');
@@ -2400,20 +2771,12 @@
 
     await sleep(Math.max(cfg.stage * 0.4, 120));
 
-    // Shift pills — same numbers, same meaning. For decrypt, inner cipher letters
+    // Shift pills — only shown on strip. For decrypt, inner cipher letters
     // unslide by MINUTE (they came from outer), outer cipher letters unslide by HOUR.
     if (hOff > 0 || mOff > 0) {
-      if (hOff > 0) {
-        const el = $('shift-inner');
-        el.textContent = `+${hOff}`;
-        el.classList.add('visible', 'flash');
-      }
+      setStage1ShiftPill('inner', hOff);
       await sleep(cfg.stage * 0.5);
-      if (mOff > 0) {
-        const el = $('shift-outer');
-        el.textContent = `+${mOff}`;
-        el.classList.add('visible', 'flash');
-      }
+      setStage1ShiftPill('outer', mOff);
       await sleep(cfg.stage);
     }
 
@@ -2431,13 +2794,13 @@
       }
 
       inputTiles[i].classList.add('hl');
-      highlightStripLetter(c, 'hl');
+      highlightStage1Letter(c, 'hl');
       await sleep(cfg.stage);
 
       if (c !== 'M' && c !== 'Z') {
-        highlightStripLetter(pc, 'partner');
+        highlightStage1Letter(pc, 'partner');
         // Negative shift = leftward slide (backward from encrypt direction)
-        drawStripArrow(c, pc, -decryptMag);
+        drawStage1Arrow(c, pc, -decryptMag);
       }
       await sleep(cfg.stage);
 
@@ -2450,7 +2813,7 @@
       inputTiles[i].classList.remove('hl');
       inputTiles[i].classList.add('dim');
       out.classList.remove('partner');
-      clearStripHighlights();
+      clearStage1Highlights();
     }
     await sleep(cfg.stage);
   }
@@ -2461,7 +2824,7 @@
     elPipeline.hidden = true;
     try {
       await act0IntroCipher(t.s4, cfg);
-      await act4MirrorNumbers(t.s4, t.s3, cfg, true);   // undo stage 4
+      await act4SwapPairs(t.s4, t.s3, cfg, true);   // undo stage 4
       await act3NumbersToLetters(t.s3, t.s2, cfg);      // undo stage 3
       await act2MirrorLetters(t.s2, t.s1, cfg, true);   // undo stage 2
       await act1ClockfaceDecrypt(t.s1, t.normalised, keyStr, cfg); // undo stage 1
@@ -2471,7 +2834,7 @@
     }
 
     setCaption('Done', 'Plaintext recovered',
-      'The word that produced your ciphertext. Scroll up to see it in the result box.');
+      'Shown in the result box above.');
     showOk(finalValue);
     renderStagesInstant(t);
   }
@@ -2487,14 +2850,14 @@
       await act1Clockface(t.normalised, t.s1, keyStr, cfg);
       await act2MirrorLetters(t.s1, t.s2, cfg);
       await act3LettersToNumbers(t.s2, t.s3, cfg);
-      await act4MirrorNumbers(t.s3, t.s4, cfg);
+      await act4SwapPairs(t.s3, t.s4, cfg);
     } catch (e) {
       if (e && e.message === 'aborted') throw e;
       throw e;
     }
 
     // Final flourish
-    setCaption('Done', 'Ciphertext ready', 'Scroll up to see it in the result box.');
+    setCaption('Done', 'Ciphertext ready', 'Shown in the result box above.');
     showOk(finalValue);
 
     // Also render the tiny summary below.
@@ -2548,8 +2911,9 @@
     const key = elKey.value.trim();
     const body = elBody.value;
 
+    // ----- Validate + compute (synchronous errors surface here) -----
+    let t, finalValue;
     try {
-      let t, finalValue;
       if (mode === 'encrypt') {
         t = encryptTrace(body, key, elReject.checked);
         finalValue = t.s4;
@@ -2558,47 +2922,76 @@
         t = encryptTrace(plain, key, false);
         finalValue = plain;
       }
-
-      if (speed === 'off') {
-        elScene.hidden = true;
-        renderStagesInstant(t);
-        showOk(finalValue);
-        return;
-      }
-
-      // Clear result first so the animation builds to it.
-      elResult.className = 'result-box empty';
-      elResult.innerHTML = `<div class="result-value">Running pipeline&hellip;</div>`;
-      elGo.disabled = true;
-      elScenePause.hidden = false;
-      animationRunning = true;
-      try {
-        if (mode === 'encrypt') {
-          await runScene(t, finalValue, key);
-        } else {
-          await runSceneDecrypt(t, finalValue, key);
-        }
-      } finally {
-        elGo.disabled = false;
-        animationRunning = false;
-        elScenePause.hidden = true;
-        setPaused(false);
-      }
     } catch (e) {
-      animationRunning = false;
-      elScenePause.hidden = true;
-      setPaused(false);
-      if (e && e.message === 'aborted') return;
       elScene.hidden = true;
       showErr(e.message);
+      return;
+    }
+
+    // ----- Instant mode: no animation -----
+    if (speed === 'off') {
+      elScene.hidden = true;
+      renderStagesInstant(t);
+      showOk(finalValue);
+      scrollToResult();
+      return;
+    }
+
+    // ----- Animated mode -----
+    elResult.className = 'result-box empty';
+    elResult.innerHTML = `<div class="result-value">Running pipeline&hellip;</div>`;
+    elGo.disabled = true;
+    elScenePause.hidden = false;
+    elSceneCancel.hidden = false;
+    animationRunning = true;
+    setControlsLocked(true);
+    scrollToResult();
+
+    let cancelled = false;
+    try {
+      if (mode === 'encrypt') {
+        await runScene(t, finalValue, key);
+      } else {
+        await runSceneDecrypt(t, finalValue, key);
+      }
+    } catch (e) {
+      if (e && e.message === 'aborted') {
+        cancelled = true;
+      } else {
+        elScene.hidden = true;
+        showErr(e.message);
+      }
+    } finally {
+      elGo.disabled = false;
+      animationRunning = false;
+      elScenePause.hidden = true;
+      elSceneCancel.hidden = true;
+      setPaused(false);
+      setControlsLocked(false);
+    }
+
+    if (cancelled) {
+      elScene.hidden = true;
+      elSceneVP.innerHTML = '';
+      clearResult(mode === 'encrypt'
+        ? 'Press Encrypt to see the ciphertext.'
+        : 'Press Decrypt to recover the plaintext.');
     }
   }
 
   elMEnc.addEventListener('click', () => setMode('encrypt'));
   elMDec.addEventListener('click', () => setMode('decrypt'));
   elSpeedBtns.forEach(b => b.addEventListener('click', () => setSpeed(b.dataset.speed)));
+  elStyleBtns.forEach(b => b.addEventListener('click', () => setStage1Style(b.dataset.style)));
   elGo.addEventListener('click', run);
   elScenePause.addEventListener('click', togglePause);
+  elSceneCancel.addEventListener('click', () => {
+    // If paused, unpause first so the aborted reject can propagate immediately.
+    setPaused(false);
+    abortAllSleeps();
+  });
+  elExEnc.addEventListener('click', () => setExplainerView('encrypt'));
+  elExDec.addEventListener('click', () => setExplainerView('decrypt'));
   elKey.addEventListener('input', () => updateClock(elKey.value.trim()));
 
   [elBody, elKey].forEach(el => el.addEventListener('keydown', (e) => {
@@ -2614,6 +3007,9 @@
   });
 
   updateClock(elKey.value.trim());
+  // Sync style buttons with the (possibly localStorage-restored) stage1Style.
+  setStage1Style(stage1Style);
+
 })();
 </script>
 </body>
