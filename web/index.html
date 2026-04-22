@@ -1869,9 +1869,9 @@
     const toY = fromRing === 'outer' ? h : 0;
 
     const fromPos = parseInt(fromTile.dataset.pos, 10);
-    const willWrap = shift > 0 && (fromPos + shift) >= 12;
+    const willWrap = shift !== 0 && ((fromPos + shift) < 0 || (fromPos + shift) >= 12);
 
-    const useLPath = shift > 0 && !willWrap;
+    const useLPath = shift !== 0 && !willWrap;
     let pathD, pathLen, labelX, labelY;
 
     if (useLPath) {
@@ -1904,10 +1904,10 @@
         stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"
         fill="none" marker-end="url(#${markerId})"
         style="stroke-dasharray: ${pathLen.toFixed(1)}; stroke-dashoffset: ${pathLen.toFixed(1)}; animation-duration: ${drawMs}ms;"/>
-      ${shift > 0 ? `
+      ${shift !== 0 ? `
         <text class="strip-arrow-label"
           x="${labelX.toFixed(1)}" y="${labelY.toFixed(1)}"
-          text-anchor="middle" dominant-baseline="central">+${shift}</text>
+          text-anchor="middle" dominant-baseline="central">${shift > 0 ? '+' : '−'}${Math.abs(shift)}</text>
       ` : ''}
     `;
   }
@@ -2154,10 +2154,12 @@
     await sleep(cfg.stage);
   }
 
-  async function act2MirrorLetters(input, output, cfg) {
-    setCaption('Stage 2',
-      'Mirror — reverse the string',
-      'Flip the letter order. First becomes last, last becomes first. No lookup, just read it backwards.');
+  async function act2MirrorLetters(input, output, cfg, reverse = false) {
+    setCaption(reverse ? 'Stage 2 · undo' : 'Stage 2',
+      reverse ? 'Unflip the letter order' : 'Mirror — reverse the string',
+      reverse
+        ? 'Reverse the letters again to undo the first mirror. Mirror is its own inverse — same move, it puts them back.'
+        : 'Flip the letter order. First becomes last, last becomes first. No lookup, just read it backwards.');
     elSceneVP.innerHTML = `
       <div class="tile-row-label">Before</div>
       <div class="tile-row" id="mir-before"></div>
@@ -2246,10 +2248,12 @@
     await sleep(cfg.stage);
   }
 
-  async function act4MirrorNumbers(input, output, cfg) {
-    setCaption('Stage 4',
-      'Mirror numbers — reverse the list',
-      'Same as stage 2 but on the number groups. This is your final ciphertext.');
+  async function act4MirrorNumbers(input, output, cfg, reverse = false) {
+    setCaption(reverse ? 'Stage 4 · undo' : 'Stage 4',
+      reverse ? 'Unflip the number list' : 'Mirror numbers — reverse the list',
+      reverse
+        ? 'Take the ciphertext and reverse the list of number groups to undo the final mirror.'
+        : 'Same as stage 2 but on the number groups. This is your final ciphertext.');
     elSceneVP.innerHTML = `
       <div class="tile-row-label">Before</div>
       <div class="tile-row" id="mn-before"></div>
@@ -2287,6 +2291,192 @@
     }
     await sleep(cfg.stage);
   }
+
+  // ---------- Decrypt acts (play the pipeline backwards) ----------
+
+  async function act0IntroCipher(cipher, cfg) {
+    setCaption('Input', 'Your ciphertext',
+      'This is what you entered. We will work backwards, undoing each stage, to recover the original word.');
+    elSceneVP.innerHTML = `
+      <div class="tile-row-label">Your ciphertext, piece by piece</div>
+      <div class="tile-row" id="intro-row"></div>
+    `;
+    const row = $('intro-row');
+    const codes = cipher ? cipher.split('-') : [];
+    if (!codes.length) {
+      row.innerHTML = '<div style="color:var(--muted);font-style:italic">(empty)</div>';
+    } else {
+      for (const c of codes) {
+        const tile = document.createElement('div');
+        tile.className = 'tile num enter';
+        tile.textContent = c;
+        row.appendChild(tile);
+        await sleep(Math.max(cfg.char * 1.5, 20));
+      }
+    }
+    await sleep(cfg.stage);
+  }
+
+  async function act3NumbersToLetters(numbers, letters, cfg) {
+    setCaption('Stage 3 · undo',
+      'Decode each number back to a letter',
+      'Same chart as stage 3 forward (A=25, B=24, …, Z=0), just read the other way. Each number becomes its matching letter.');
+    elSceneVP.innerHTML = `
+      <div class="tile-row-label">Numbers</div>
+      <div class="tile-row" id="num-codes"></div>
+      <div class="row-arrow">↓ look up each number ↓</div>
+      <div class="tile-row-label">Letters</div>
+      <div class="tile-row" id="num-letters"></div>
+    `;
+    const codesRow = $('num-codes');
+    const lettersRow = $('num-letters');
+    const codeList = numbers ? numbers.split('-') : [];
+    for (const c of codeList) {
+      const tile = document.createElement('div');
+      tile.className = 'tile num enter';
+      tile.textContent = c;
+      codesRow.appendChild(tile);
+    }
+    await sleep(cfg.stage * 0.7);
+
+    for (let i = 0; i < codeList.length; i++) {
+      const codeTile = codesRow.children[i];
+      const code = codeList[i];
+      const letter = letters[i];
+      const codeNum = parseInt(code, 10);
+      codeTile.classList.add('hl');
+
+      const bubble = document.createElement('div');
+      bubble.className = 'formula-bubble';
+      bubble.textContent = `${code} → ${letter}  (25 − ${codeNum} = ${25 - codeNum})`;
+      codeTile.appendChild(bubble);
+      await sleep(cfg.stage * 0.8);
+
+      const letterTile = document.createElement('div');
+      letterTile.className = 'tile enter flip';
+      letterTile.textContent = letter;
+      lettersRow.appendChild(letterTile);
+      await sleep(Math.max(cfg.char * 4, 80));
+
+      codeTile.classList.remove('hl');
+      codeTile.classList.add('dim');
+      bubble.remove();
+    }
+    await sleep(cfg.stage);
+  }
+
+  async function act1ClockfaceDecrypt(cipher, plain, keyStr, cfg) {
+    const parsed = parseTimeKey(keyStr);
+    const hOff = parsed.hour % 12;
+    const mOff = Math.floor(parsed.minute / 5);
+
+    setCaption('Stage 1 · undo', 'Undo the clockface swap with the key',
+      `Now go in reverse: for each cipher letter, slide BACKWARDS along its row by the row's slide, then swap across to the other ring. That recovers the original plaintext letter.`);
+
+    elSceneVP.innerHTML = `
+      ${renderKeyBreakdown(keyStr, parsed, hOff, mOff)}
+      ${renderStripHTML()}
+      <div style="display:flex;gap:32px;justify-content:center;flex-wrap:wrap;margin-top:12px">
+        <div>
+          <div class="tile-row-label">Cipher letters</div>
+          <div class="tile-row" id="cf-in"></div>
+        </div>
+        <div>
+          <div class="tile-row-label">Recovered plaintext</div>
+          <div class="tile-row" id="cf-out"></div>
+        </div>
+      </div>
+    `;
+
+    const inRow = $('cf-in');
+    const outRow = $('cf-out');
+    for (const c of cipher) {
+      const tile = document.createElement('div');
+      tile.className = 'tile';
+      tile.textContent = c;
+      inRow.appendChild(tile);
+    }
+    const inputTiles = inRow.querySelectorAll('.tile');
+
+    await sleep(Math.max(cfg.stage * 0.4, 120));
+
+    // Shift pills — same numbers, same meaning. For decrypt, inner cipher letters
+    // unslide by MINUTE (they came from outer), outer cipher letters unslide by HOUR.
+    if (hOff > 0 || mOff > 0) {
+      if (hOff > 0) {
+        const el = $('shift-inner');
+        el.textContent = `+${hOff}`;
+        el.classList.add('visible', 'flash');
+      }
+      await sleep(cfg.stage * 0.5);
+      if (mOff > 0) {
+        const el = $('shift-outer');
+        el.textContent = `+${mOff}`;
+        el.classList.add('visible', 'flash');
+      }
+      await sleep(cfg.stage);
+    }
+
+    for (let i = 0; i < cipher.length; i++) {
+      const c = cipher[i];
+      const pc = plain[i];
+
+      // Decrypt slide magnitude (source = cipher letter):
+      //   inner cipher letter came from outer via MINUTE shift → slide left by m
+      //   outer cipher letter came from inner via HOUR shift   → slide left by h
+      const iIdx = c.charCodeAt(0) - 65;
+      let decryptMag = 0;
+      if (c !== 'M' && c !== 'Z') {
+        decryptMag = (iIdx < 12) ? mOff : hOff;
+      }
+
+      inputTiles[i].classList.add('hl');
+      highlightStripLetter(c, 'hl');
+      await sleep(cfg.stage);
+
+      if (c !== 'M' && c !== 'Z') {
+        highlightStripLetter(pc, 'partner');
+        // Negative shift = leftward slide (backward from encrypt direction)
+        drawStripArrow(c, pc, -decryptMag);
+      }
+      await sleep(cfg.stage);
+
+      const out = document.createElement('div');
+      out.className = 'tile enter partner';
+      out.textContent = pc;
+      outRow.appendChild(out);
+      await sleep(Math.max(cfg.char * 4, 80));
+
+      inputTiles[i].classList.remove('hl');
+      inputTiles[i].classList.add('dim');
+      out.classList.remove('partner');
+      clearStripHighlights();
+    }
+    await sleep(cfg.stage);
+  }
+
+  async function runSceneDecrypt(t, finalValue, keyStr) {
+    const cfg = SPEED_CONFIG[speed] || SPEED_CONFIG.normal;
+    elScene.hidden = false;
+    elPipeline.hidden = true;
+    try {
+      await act0IntroCipher(t.s4, cfg);
+      await act4MirrorNumbers(t.s4, t.s3, cfg, true);   // undo stage 4
+      await act3NumbersToLetters(t.s3, t.s2, cfg);      // undo stage 3
+      await act2MirrorLetters(t.s2, t.s1, cfg, true);   // undo stage 2
+      await act1ClockfaceDecrypt(t.s1, t.normalised, keyStr, cfg); // undo stage 1
+    } catch (e) {
+      if (e && e.message === 'aborted') throw e;
+      throw e;
+    }
+
+    setCaption('Done', 'Plaintext recovered',
+      'The word that produced your ciphertext. Scroll up to see it in the result box.');
+    showOk(finalValue);
+    renderStagesInstant(t);
+  }
+
+  // ---------- Forward pipeline orchestrator ----------
 
   async function runScene(t, finalValue, keyStr) {
     const cfg = SPEED_CONFIG[speed] || SPEED_CONFIG.normal;
@@ -2383,7 +2573,11 @@
       elScenePause.hidden = false;
       animationRunning = true;
       try {
-        await runScene(t, finalValue, key);
+        if (mode === 'encrypt') {
+          await runScene(t, finalValue, key);
+        } else {
+          await runSceneDecrypt(t, finalValue, key);
+        }
       } finally {
         elGo.disabled = false;
         animationRunning = false;
