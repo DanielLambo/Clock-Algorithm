@@ -48,6 +48,19 @@ void verify_mirror_layer() {
     assert(mcrc::mirror(mcrc::mirror(s)) == std::string(s));
 }
 
+void verify_swap_pairs_layer() {
+    // Even length: every adjacent pair swaps.
+    assert(mcrc::swap_pairs({1, 2, 3, 4}) == (std::vector<std::uint8_t>{2, 1, 4, 3}));
+    // Odd length: lone last element stays in place.
+    assert(mcrc::swap_pairs({21, 5, 5, 14, 18}) == (std::vector<std::uint8_t>{5, 21, 14, 5, 18}));
+    // Edge cases.
+    assert(mcrc::swap_pairs({}) == (std::vector<std::uint8_t>{}));
+    assert(mcrc::swap_pairs({7}) == (std::vector<std::uint8_t>{7}));
+    // Self-inverse property: swap_pairs(swap_pairs(v)) == v.
+    const std::vector<std::uint8_t> v{25, 8, 8, 18, 22, 13, 4};
+    assert(mcrc::swap_pairs(mcrc::swap_pairs(v)) == v);
+}
+
 void verify_reverse_cipher_roundtrip() {
     const std::string letters = "QUEEN";
     const auto codes = mcrc::reverse_cipher_encode(letters);
@@ -148,11 +161,11 @@ void verify_ciphertext_parsing_errors() {
 }
 
 void verify_v1_integration() {
-    assert(mcrc::encrypt("QUEEN", "3:20", mcrc::NonLetterPolicy::Strip, mcrc::Version::V1) == "22-18-08-08-25");
-    assert(mcrc::decrypt("22-18-08-08-25", "3:20", mcrc::Version::V1) == "QUEEN");
+    assert(mcrc::encrypt("QUEEN", "3:20", mcrc::NonLetterPolicy::Strip, mcrc::Version::V1) == "08-25-18-08-22");
+    assert(mcrc::decrypt("08-25-18-08-22", "3:20", mcrc::Version::V1) == "QUEEN");
 
     // Normalisation: mixed case and Strip policy.
-    assert(mcrc::encrypt("Queen!", "3:20", mcrc::NonLetterPolicy::Strip, mcrc::Version::V1) == "22-18-08-08-25");
+    assert(mcrc::encrypt("Queen!", "3:20", mcrc::NonLetterPolicy::Strip, mcrc::Version::V1) == "08-25-18-08-22");
 
     // Reject policy throws on non-letters.
     bool threw = false;
@@ -191,9 +204,9 @@ void verify_v1_pipeline_trace() {
     assert(t.after_clockface      == "DHRRA");
     assert(t.after_first_mirror   == "ARRHD");
     assert(t.after_reverse_cipher == "25-08-08-18-22");
-    assert(t.after_second_mirror  == "22-18-08-08-25");
+    assert(t.after_swap_pairs  == "08-25-18-08-22");
 
-    assert(t.after_second_mirror == mcrc::encrypt("QUEEN", "3:20", mcrc::NonLetterPolicy::Strip, mcrc::Version::V1));
+    assert(t.after_swap_pairs == mcrc::encrypt("QUEEN", "3:20", mcrc::NonLetterPolicy::Strip, mcrc::Version::V1));
 
     bool threw = false;
     try {
@@ -340,12 +353,12 @@ void verify_v2_integration() {
     // Clockface: QUEEN → HLUUE
     // Mirror: HLUUE → EUULH
     // Reverse cipher: E=21, U=05, U=05, L=14, H=18 → "21-05-05-14-18"
-    // Mirror: "18-14-05-05-21"
-    assert(mcrc::encrypt("QUEEN", "3:20", mcrc::NonLetterPolicy::Strip, mcrc::Version::V2) == "18-14-05-05-21");
-    assert(mcrc::decrypt("18-14-05-05-21", "3:20", mcrc::Version::V2) == "QUEEN");
+    // Swap pairs:  (21,05)→(05,21), (05,14)→(14,05), lone 18 → "05-21-14-05-18"
+    assert(mcrc::encrypt("QUEEN", "3:20", mcrc::NonLetterPolicy::Strip, mcrc::Version::V2) == "05-21-14-05-18");
+    assert(mcrc::decrypt("05-21-14-05-18", "3:20", mcrc::Version::V2) == "QUEEN");
 
     // Normalisation still works.
-    assert(mcrc::encrypt("Queen!", "3:20", mcrc::NonLetterPolicy::Strip, mcrc::Version::V2) == "18-14-05-05-21");
+    assert(mcrc::encrypt("Queen!", "3:20", mcrc::NonLetterPolicy::Strip, mcrc::Version::V2) == "05-21-14-05-18");
 
     // Empty plaintext.
     assert(mcrc::encrypt("", "3:20", mcrc::NonLetterPolicy::Strip, mcrc::Version::V2) == "");
@@ -358,9 +371,9 @@ void verify_v2_pipeline_trace() {
     assert(t.after_clockface      == "HLUUE");
     assert(t.after_first_mirror   == "EUULH");
     assert(t.after_reverse_cipher == "21-05-05-14-18");
-    assert(t.after_second_mirror  == "18-14-05-05-21");
+    assert(t.after_swap_pairs  == "05-21-14-05-18");
 
-    assert(t.after_second_mirror == mcrc::encrypt("QUEEN", "3:20", mcrc::NonLetterPolicy::Strip, mcrc::Version::V2));
+    assert(t.after_swap_pairs == mcrc::encrypt("QUEEN", "3:20", mcrc::NonLetterPolicy::Strip, mcrc::Version::V2));
 }
 
 void verify_v2_random_roundtrip() {
@@ -396,6 +409,7 @@ int main() {
     // Shared layers (unchanged).
     verify_reverse_cipher_table();
     verify_mirror_layer();
+    verify_swap_pairs_layer();
     verify_reverse_cipher_roundtrip();
     verify_time_key_parsing();
     verify_ciphertext_parsing_errors();

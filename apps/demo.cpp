@@ -145,7 +145,7 @@ int main(int argc, char** argv) {
         std::cout << "Stage 1 (clockface):      " << trace.after_clockface << '\n';
         std::cout << "Stage 2 (mirror):         " << trace.after_first_mirror << '\n';
         std::cout << "Stage 3 (reverse num):    " << trace.after_reverse_cipher << '\n';
-        std::cout << "Stage 4 (mirror):         " << trace.after_second_mirror << '\n';
+        std::cout << "Stage 4 (swap pairs):     " << trace.after_swap_pairs << '\n';
         return 0;
     } catch (const std::exception& e) {
         std::cerr << "error: " << e.what() << '\n';

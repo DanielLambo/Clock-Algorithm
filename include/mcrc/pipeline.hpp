@@ -30,7 +30,7 @@ struct PipelineTrace {
     std::string after_clockface;      ///< Stage 1 output
     std::string after_first_mirror;   ///< Stage 2 output
     std::string after_reverse_cipher; ///< Stage 3 output (formatted codes)
-    std::string after_second_mirror;  ///< Stage 4 output (final ciphertext)
+    std::string after_swap_pairs;     ///< Stage 4 output (final ciphertext)
 };
 
 /// Runs `encrypt` while capturing every intermediate stage.

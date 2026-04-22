@@ -11,13 +11,13 @@ A custom encryption algorithm that turns plain text into a sequence of numbers �
 You give MCRC a word (or any text) and a "time key" — a time like `3:20` — and it produces a coded sequence of numbers:
 
 ```
-QUEEN  →  22-18-08-08-25
+QUEEN  →  08-25-18-08-22
 ```
 
 Give it the same time key and the coded numbers, and it gives you back the original word:
 
 ```
-22-18-08-08-25  →  QUEEN
+08-25-18-08-22  →  QUEEN
 ```
 
 ---
@@ -84,11 +84,11 @@ Replace each letter with a number using this table — the alphabet backwards:
 
 `ARRHD` → `25-08-08-18-22`
 
-### Step 4 — Mirror again (reverse the numbers)
+### Step 4 — Swap consecutive pairs
 
-Reverse the order of the number groups.
+Swap each adjacent pair of number groups: `(a, b) → (b, a)`. If the sequence has an odd length, the final element stays in place. This step is its own inverse — applying it twice returns the original, so decryption uses the same operation unchanged.
 
-`25-08-08-18-22` → `22-18-08-08-25`
+`25-08-08-18-22` → `08-25-18-08-22`
 
 That's the final ciphertext.
 
@@ -102,14 +102,14 @@ That's the final ciphertext.
 | Step 1 | Clockface swap | `DHRRA` |
 | Step 2 | Reverse letters | `ARRHD` |
 | Step 3 | Letters → numbers | `25-08-08-18-22` |
-| Step 4 | Reverse numbers | `22-18-08-08-25` |
+| Step 4 | Swap consecutive pairs | `08-25-18-08-22` |
 
 ### Decryption (going backwards)
 
 | Step | What happens | Result |
 |------|-------------|--------|
-| Start | Ciphertext | `22-18-08-08-25` |
-| Undo Step 4 | Reverse numbers | `25-08-08-18-22` |
+| Start | Ciphertext | `08-25-18-08-22` |
+| Undo Step 4 | Swap pairs again | `25-08-08-18-22` |
 | Undo Step 3 | Numbers → letters | `ARRHD` |
 | Undo Step 2 | Reverse letters | `DHRRA` |
 | Undo Step 1 | Clockface swap | `QUEEN` |
@@ -196,13 +196,13 @@ mcrc_verify: all checks passed
 ```
 Output:
 ```
-22-18-08-08-25
+08-25-18-08-22
 ```
 
 ### Decrypt a message
 
 ```bash
-./build/mcrc decrypt --key 3:20 --cipher 22-18-08-08-25
+./build/mcrc decrypt --key 3:20 --cipher 08-25-18-08-22
 ```
 Output:
 ```
@@ -276,7 +276,7 @@ Input (normalised):       QUEEN
 Stage 1 (clockface):      DHRRA
 Stage 2 (mirror):         ARRHD
 Stage 3 (reverse num):    25-08-08-18-22
-Stage 4 (mirror):         22-18-08-08-25
+Stage 4 (swap pairs):     08-25-18-08-22
 ```
 
 To hide the clock and show only the pipeline steps:
@@ -339,11 +339,11 @@ cmake --build build --target verify
 
 It tests:
 - Every letter in the clockface swap table
-- The mirror reversal (both letters and numbers)
+- The mirror reversal for letters and the swap-pairs permutation for numeric codes
 - The reverse cipher encoding and decoding
 - Time key validation (valid and invalid formats)
 - Ciphertext parsing (valid and malformed inputs)
-- The known-answer test: `QUEEN` with key `3:20` → `22-18-08-08-25`
+- The known-answer test: `QUEEN` with key `3:20` → `08-25-18-08-22`
 - 100 randomly generated messages, each encrypted and then decrypted to confirm the original is recovered
 
 ---
@@ -413,7 +413,7 @@ QUEEN
  → HLUUE              (clockface v2)
  → EUULH              (first mirror)
  → 21-05-05-14-18     (reverse cipher)
- → 18-14-05-05-21     (second mirror — final ciphertext)
+ → 05-21-14-05-18     (swap pairs — final ciphertext)
 ```
 
 At key `12:00` (both offsets zero), every inner letter shifts by 0 onto the outer ring at the same position — which is exactly the v1 ROT13 swap.
@@ -422,4 +422,4 @@ At key `12:00` (both offsets zero), every inner letter shifts by 0 onto the oute
 
 ## Note on the original specification document
 
-The original class assignment document had `Q` incorrectly mapped to `E` (position 5) instead of `D` (position 4) in the clockface step, yielding a wrong intermediate. This has been corrected in the v1.0 implementation: `QUEEN → DHRRA`, final ciphertext `22-18-08-08-25`.
+The original class assignment document had `Q` incorrectly mapped to `E` (position 5) instead of `D` (position 4) in the clockface step, yielding a wrong intermediate. This has been corrected in the v1.0 implementation: `QUEEN → DHRRA`, final ciphertext `08-25-18-08-22`.

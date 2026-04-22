@@ -49,7 +49,7 @@ std::string encrypt(std::string_view plaintext,
     const std::string stage1 = do_clockface_encode(normalised, key, version);
     const std::string stage2 = mirror(stage1);
     const std::vector<std::uint8_t> stage3 = reverse_cipher_encode(stage2);
-    const std::vector<std::uint8_t> stage4 = mirror(stage3);
+    const std::vector<std::uint8_t> stage4 = swap_pairs(stage3);
 
     return format_codes(stage4);
 }
@@ -60,7 +60,8 @@ std::string decrypt(std::string_view ciphertext,
     const TimeKey key = parse_time_key(time_key);
 
     const std::vector<std::uint8_t> codes = parse_codes(ciphertext);
-    const std::vector<std::uint8_t> un_stage4 = mirror(codes);
+    // swap_pairs is self-inverse, so it undoes stage 4 directly.
+    const std::vector<std::uint8_t> un_stage4 = swap_pairs(codes);
     const std::string un_stage3 = reverse_cipher_decode(un_stage4);
     const std::string un_stage2 = mirror(un_stage3);
     return do_clockface_decode(un_stage2, key, version);
@@ -78,7 +79,7 @@ PipelineTrace encrypt_trace(std::string_view plaintext,
     t.after_first_mirror = mirror(t.after_clockface);
     const auto codes = reverse_cipher_encode(t.after_first_mirror);
     t.after_reverse_cipher = format_codes(codes);
-    t.after_second_mirror = format_codes(mirror(codes));
+    t.after_swap_pairs = format_codes(swap_pairs(codes));
     return t;
 }
 
